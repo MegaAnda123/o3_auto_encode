@@ -4,3 +4,4 @@ venv
 temp
 ffmpeg.exe
 ffprobe.exe
+.git
