@@ -8,6 +8,7 @@ class LaunchArguments:
 
     input_folder: str
     output_folder: str
+    json_path: str
     crf_quality: int
     preset: str
 
@@ -34,12 +35,20 @@ def pars_args() -> LaunchArguments:
         default="slower",
         help="Encoding preset (fast, slow, etc)."
     )
+    arg_parser.add_argument(
+        "-j",
+        "--json",
+        type=str,
+        default=f"/out/.meta.json",
+        help="Where to store json file containing progress and metadata."
+    )
 
     args = arg_parser.parse_args()
 
     return LaunchArguments(
         input_folder=args.input_folder,
         output_folder=args.output_folder,
+        json_path=args.json,
         crf_quality=args.crf,
         preset=args.preset,
     )
