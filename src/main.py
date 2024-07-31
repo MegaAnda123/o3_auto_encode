@@ -7,6 +7,11 @@ import time
 from dateutil import parser
 from tqdm import tqdm
 from args_parser import pars_args, LaunchArguments
+from ffmpeg_with_progress import ffmpeg_with_progress
+import utils
+
+FFMPEG = utils.get_ffmpeg_path()
+FFPROBE = utils.get_ffprobe_path()
 
 
 def is_transferring(path: str, min_delta: float = 1.0) -> bool:
@@ -21,6 +26,7 @@ def is_transferring(path: str, min_delta: float = 1.0) -> bool:
         If given folder has an active file transfer on any file in the folder.
 
     """
+    # TODO WIP
     files = os.listdir(path)
     print(files)
 
@@ -44,6 +50,15 @@ def write_video_db(videos: list[dict], path: Path | str):
 
 
 def get_sec(time_str: str) -> float:
+    """Convert time string to seconds (format hh:mm:ss.ms).
+
+    Args:
+        time_str: Time string to convert.
+
+    Returns:
+        Seconds as float.
+
+    """
     h, m, s = time_str.split(":")
     return float(h) * 3600 + float(m) * 60 + float(s)
 
@@ -70,8 +85,7 @@ def parse_ffprobe_output(ffprobe_string: str) -> dict:
 
 
 def get_video_info(path: Path) -> dict:
-    ffprobe_path = "ffprobe"
-    process = subprocess.run([ffprobe_path, str(path)], capture_output=True)
+    process = subprocess.run([FFPROBE, str(path)], capture_output=True)
     return parse_ffprobe_output(process.stderr.decode("utf8"))
 
 
@@ -95,6 +109,7 @@ def get_video_bundles(path: str | Path, max_delta: float = 3.0):
     for file in tqdm(get_files(path)):
         video_info = get_video_info(file)
         video_info["file"] = file
+        video_info["abs_path"] = str(file.absolute())
         info.append(video_info)
 
     sorted_info = [x for x in sorted(info, key=lambda x: x["creation_time_unix"])]
@@ -115,7 +130,7 @@ def get_video_bundles(path: str | Path, max_delta: float = 3.0):
 
 def encode_bundles(bundle_info: list[dict], args_: LaunchArguments) -> None:
     path = Path(args_.output_folder)
-
+    # TODO make bundle data class
     for bundle in tqdm(bundle_info, desc="Encoding..."):
         list_string = ""
         for video in bundle.values():
@@ -131,24 +146,25 @@ def encode_bundles(bundle_info: list[dict], args_: LaunchArguments) -> None:
         else:
             bundle["status"] = "interrupted"
             write_video_db(bundle_info, args_.json_path)
-            subprocess.run([
-                "ffmpeg",
-                "-safe",
-                "0",
-                "-f",
-                "concat",
-                "-i",
-                "list.txt",
-                "-c:v",
-                "libx265",
-                "-crf",
-                str(args_.crf_quality),
-                "-preset",
-                args_.preset,
-                f"{path}/{bundle['name']}.mp4"
-                ],
-                stdout=subprocess.PIPE
-            )
+            ffmpeg_with_progress(FFMPEG, args_, bundle, path)
+            # subprocess.run([
+            #     "ffmpeg",
+            #     "-safe",
+            #     "0",
+            #     "-f",
+            #     "concat",
+            #     "-i",
+            #     "list.txt",
+            #     "-c:v",
+            #     "libx265",
+            #     "-crf",
+            #     str(args_.crf_quality),
+            #     "-preset",
+            #     args_.preset,
+            #     f"{path}/{bundle['name']}.mp4"
+            #     ],
+            #     stdout=subprocess.PIPE
+            # )
             bundle["status"] = "done"
             bundle["config"] = str(args_)
             write_video_db(bundle_info, args_.json_path)
@@ -157,6 +173,15 @@ def encode_bundles(bundle_info: list[dict], args_: LaunchArguments) -> None:
 if __name__ == '__main__':
     args = pars_args()
     print(args)
+    print(os.getcwd())
     videos_ = get_video_bundles(args.input_folder)
     write_video_db(videos_, args.json_path)
     encode_bundles(videos_, args)
+
+
+def test_entry(args_: LaunchArguments) -> None:
+    print(args_)
+    videos__ = get_video_bundles(args_.input_folder)
+    write_video_db(videos__, args_.json_path)
+    encode_bundles(videos__, args_)
+
