@@ -152,9 +152,5 @@ cython_debug/
 #.idea/
 
 .idea/
-test_files/
 out/
 temp/
-
-ffmpeg.exe
-ffprobe.exe

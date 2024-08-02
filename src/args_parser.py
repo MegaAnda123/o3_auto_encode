@@ -2,10 +2,8 @@ import argparse
 from dataclasses import dataclass
 
 
-
 @dataclass
 class LaunchArguments:
-
     input_folder: str
     output_folder: str
     json_path: str
@@ -14,7 +12,6 @@ class LaunchArguments:
 
 
 def pars_args() -> LaunchArguments:
-
     arg_parser = argparse.ArgumentParser(
         description="Tool for encoding separated o3 clips to one video with substantially lower bitrate.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -26,7 +23,9 @@ def pars_args() -> LaunchArguments:
         "--crf",
         type=int,
         default=30,
-        help="Encoding (crf) quality lower better (larger file) higher worse (smaller file)."
+        help="The CRF value can be from 0–63. "
+             "Lower values mean better quality and greater file size. 0 means lossless. "
+             "For o3 encoded to h264 CRF 30 (the default) seems to be visually lossless (encoding to x265 @slower)."
     )
     arg_parser.add_argument(
         "-p",
@@ -35,6 +34,7 @@ def pars_args() -> LaunchArguments:
         default="slower",
         help="Encoding preset (fast, slow, etc)."
     )
+    # TODO deprecate (use couchDB)
     arg_parser.add_argument(
         "-j",
         "--json",

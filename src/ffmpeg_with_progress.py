@@ -15,7 +15,7 @@ def _get_total_frames(bundle) -> int:
     return frames
 
 
-def ffmpeg_with_progress(ffmpeg_path, args_, bundle, path) -> None:
+def ffmpeg_with_progress(args_, bundle, path) -> None:
     """ TODO
 
     Args:
@@ -32,7 +32,7 @@ def ffmpeg_with_progress(ffmpeg_path, args_, bundle, path) -> None:
 
     # TODO use ffmpeg config object
     process = subprocess.Popen([
-        ffmpeg_path,
+        utils.get_ffmpeg_path(),
         "-safe",
         "0",
         "-f",
@@ -40,7 +40,8 @@ def ffmpeg_with_progress(ffmpeg_path, args_, bundle, path) -> None:
         "-i",
         "list.txt",
         "-c:v",
-        "h264_nvenc",
+        "libx264",
+        # "h264_nvenc",
         "-crf",
         str(args_.crf_quality),
         "-preset",
