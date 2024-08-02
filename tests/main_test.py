@@ -2,9 +2,9 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from src import utils
-from src import main
-from src.args_parser import LaunchArguments
+from o3_auto_encode import utils
+from o3_auto_encode import main
+from o3_auto_encode.args_parser import LaunchArguments
 
 
 TEST_ROOT = Path(__file__).parent

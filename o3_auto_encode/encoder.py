@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from file_manager import Bundle
+from o3_auto_encode.file_manager import Bundle
 import tempfile
 import subprocess
-from src.ffmpeg_settings import FFMPEGSettings
+from o3_auto_encode.ffmpeg_settings import FFMPEGSettings
 
 
 def encode_bundle(bundle: Bundle, ffmpeg_setting: FFMPEGSettings) -> None:

@@ -1,0 +1,64 @@
+repos:
+-   repo: https://github.com/python-poetry/poetry
+    rev: "1.7.0"
+    hooks:
+    -   id: poetry-check
+
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+    -   id: no-commit-to-branch  # Do not allow commits to master/main branch
+    -   id: check-json  # Attempts to load all json files to verify syntax
+    #-   id: pretty-format-json  # Check all JSON files are sorted and indented (2)
+    -   id: check-yaml  # Attempts to load all yaml files to verify syntax
+    -   id: debug-statements  # Looks for debugger imports and `breakpoint()`
+    -   id: end-of-file-fixer  # Ensure ends with newline
+    -   id: fix-encoding-pragma
+        args: [--remove]  # Remove the coding pragma (useful for py3-only codebase)
+    -   id: mixed-line-ending  # Replaces mixed line ending to the most common
+        exclude: |
+            (?x)^(
+                .*/tests/files/|
+                .*/tests/test_files/
+            )
+    -   id: trailing-whitespace  # Trim trailing whitespace
+    -   id: detect-private-key  # Checks for private keys
+    -   id: check-merge-conflict  # Check for merge conflict strings
+    -   id: name-tests-test  # Check files in tests/ end with `_test.py`
+    -   id: check-added-large-files  # Prevent giant files from being committed
+        args: ['--maxkb=200']
+
+# Quick content checks based on grepping for python specific patterns:
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+    -   id: python-check-blanket-noqa   # Prohibit overly broad QA exclusions.
+    -   id: python-no-eval              # Never use eval() it's dangerous.
+    -   id: python-no-log-warn          # logger.warning(), not old .warn()
+    -   id: python-use-type-annotations # Enforce that python3.6+ type annotations are used instead of type comments
+
+-   repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+    -   id: isort
+        name: isort
+        args: ["--settings-path", "pyproject.toml"]
+
+-   repo: https://github.com/ambv/black
+    rev: 23.10.1
+    hooks:
+    -   id: black
+        args: ["--config", "pyproject.toml"]
+
+-   repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
+    hooks:
+    -   id: flake8
+        name: flake8 (bugbear)
+        additional_dependencies: [Flake8-pyproject]
+
+-   repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.0
+    hooks:
+    -   id: pyupgrade
+        args: ["--py310-plus"]

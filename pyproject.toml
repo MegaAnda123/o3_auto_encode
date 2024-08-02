@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "o3-auto-encode"
+version = "0.1.0"
+description = "Automated tool for recombining split air unit clips into one file and reducing overall video file size."
+authors = ["André Strømsnes Helland <andrehelland99@gmail.com>"]
+license = "LGPL-3.0-only"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tqdm = "^4.66.4"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+pre-commit = "^3.8.0"
+isort = "^5.13.2"
+flake8 = "^7.1.0"
+pytest = "^8.3.2"
+
+[tool.black]
+line-length = 120
+target-version = ['py311']
+include='\.pyi?$'
+extend-exclude = '''\.git |
+            \.__pycache__|
+            \.hg|
+            \.mypy_cache|
+            \.tox|
+            \.venv|
+            _build|
+            buck-out|
+            build|
+            dist'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.flake8]
+max_line_length="120"
+select="E9, F63, F7, F82, F4, H4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

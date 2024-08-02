@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from src import utils
-from src.enums import Codec, EncodePreset
+from o3_auto_encode import utils
+from o3_auto_encode.enums import Codec, EncodePreset
 
 
 class FFMPEGSettings:

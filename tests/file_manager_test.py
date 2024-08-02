@@ -1,5 +1,5 @@
 from pathlib import Path
-from src import file_manager
+from o3_auto_encode import file_manager
 
 TEST_ROOT = Path(__file__).parent
 

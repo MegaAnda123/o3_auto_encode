@@ -3,9 +3,9 @@ from pathlib import Path
 
 from args_parser import pars_args, LaunchArguments
 # from tbd import write_video_db, get_video_bundles, encode_bundles
-from src.file_manager import generate_bundles
-from src.encoder import encode_bundle
-from src.ffmpeg_settings import FFMPEGSettings
+from o3_auto_encode.file_manager import generate_bundles
+from o3_auto_encode.encoder import encode_bundle
+from o3_auto_encode.ffmpeg_settings import FFMPEGSettings
 
 
 def run(launch_args: LaunchArguments) -> None:
