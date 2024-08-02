@@ -4,10 +4,10 @@ import os
 import re
 import subprocess
 from pathlib import Path
-from dateutil import parser as dateparser
-from tqdm import tqdm
 
 import utils
+from dateutil import parser as dateparser
+from tqdm import tqdm
 
 
 class Clip:
@@ -128,6 +128,6 @@ def _add_delta(clips: list[Clip]) -> list[Clip]:
     for clip in clips:
         t2 = clip.creation_time_unix
         d = clip.duration_s
-        clip.delta = t2-t1
-        t1 = t2+d
+        clip.delta = t2 - t1
+        t1 = t2 + d
     return clips

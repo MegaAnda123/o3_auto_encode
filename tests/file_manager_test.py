@@ -1,11 +1,11 @@
 from pathlib import Path
+
 from o3_auto_encode import file_manager
 
 TEST_ROOT = Path(__file__).parent
 
 
 def test_generate_bundles() -> None:
-
     path = TEST_ROOT / "test_files/144p"
 
     bundles = file_manager.generate_bundles(path)
@@ -23,7 +23,6 @@ def test_generate_bundles() -> None:
     ]
 
     for result_bundle, expected_bundle in zip(bundles, expected):
-
         assert result_bundle.name == expected_bundle.name
         assert result_bundle.creation_time == expected_bundle.creation_time
         for result_clip, expected_clip in zip(result_bundle.clips, expected_bundle.clips):
@@ -33,9 +32,3 @@ def test_generate_bundles() -> None:
             assert result_clip.creation_time == expected_clip.creation_time
             assert result_clip.creation_time_unix == expected_clip.creation_time_unix
             assert result_clip.duration_s == expected_clip.duration_s
-
-
-
-
-
-

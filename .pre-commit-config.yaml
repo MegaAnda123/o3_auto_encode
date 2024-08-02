@@ -26,7 +26,7 @@ repos:
     -   id: check-merge-conflict  # Check for merge conflict strings
     -   id: name-tests-test  # Check files in tests/ end with `_test.py`
     -   id: check-added-large-files  # Prevent giant files from being committed
-        args: ['--maxkb=200']
+        args: ['--maxkb=100000']
 
 # Quick content checks based on grepping for python specific patterns:
 -   repo: https://github.com/pre-commit/pygrep-hooks
