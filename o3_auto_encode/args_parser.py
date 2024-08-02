@@ -24,23 +24,17 @@ def pars_args() -> LaunchArguments:
         type=int,
         default=30,
         help="The CRF value can be from 0–63. "
-             "Lower values mean better quality and greater file size. 0 means lossless. "
-             "For o3 encoded to h264 CRF 30 (the default) seems to be visually lossless (encoding to x265 @slower)."
+        "Lower values mean better quality and greater file size. 0 means lossless. "
+        "For o3 encoded to h264 CRF 30 (the default) seems to be visually lossless (encoding to x265 @slower).",
     )
-    arg_parser.add_argument(
-        "-p",
-        "--preset",
-        type=str,
-        default="slower",
-        help="Encoding preset (fast, slow, etc)."
-    )
+    arg_parser.add_argument("-p", "--preset", type=str, default="slower", help="Encoding preset (fast, slow, etc).")
     # TODO deprecate (use couchDB)
     arg_parser.add_argument(
         "-j",
         "--json",
         type=str,
         default=f"/out/.meta.json",
-        help="Where to store json file containing progress and metadata."
+        help="Where to store json file containing progress and metadata.",
     )
 
     args = arg_parser.parse_args()

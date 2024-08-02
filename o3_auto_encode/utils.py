@@ -1,6 +1,6 @@
-from pathlib import Path
 import platform
 import subprocess
+from pathlib import Path
 
 
 def _get_project_root() -> Path:
@@ -42,18 +42,19 @@ def get_video_frames(video_path: Path | str) -> int:
     path = Path(video_path)
     ffprobe = get_ffprobe_path()
 
-    process = subprocess.run([
-        ffprobe,
-        "-v",
-        "error",
-        "-select_streams",
-        "v:0",
-        "-count_packets",
-        "-show_entries",
-        "stream=nb_read_packets",
-        "-of",
-        "csv=p=0",
-        str(path),
+    process = subprocess.run(
+        [
+            ffprobe,
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-count_packets",
+            "-show_entries",
+            "stream=nb_read_packets",
+            "-of",
+            "csv=p=0",
+            str(path),
         ],
         stdout=subprocess.PIPE,
         text=True,

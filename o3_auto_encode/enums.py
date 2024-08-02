@@ -2,7 +2,6 @@ from enum import Enum
 
 
 class Codec(Enum):
-
     X264 = "libx264"
     X265 = "libx265"
     NV264 = "h264_nvenc"
@@ -14,7 +13,6 @@ class Codec(Enum):
 
 
 class EncodePreset(Enum):
-
     ULTRAFAST = "ultrafast"
     SUPERFAST = "superfast"
     VERYFAST = "veryfast"

@@ -5,7 +5,6 @@ from o3_auto_encode.enums import Codec, EncodePreset
 
 
 class FFMPEGSettings:
-
     codec: Codec
     crf: int
     preset: EncodePreset

@@ -16,4 +16,4 @@ This will yield a final video file smaller than the sum of all the clips dependi
 
 
 
-TODO add quick start, docker setup, etc. 
+TODO add quick start, docker setup, etc.
