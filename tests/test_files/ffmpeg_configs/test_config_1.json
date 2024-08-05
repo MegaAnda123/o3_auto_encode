@@ -1,0 +1,5 @@
+{
+  "codec": "libx264",
+  "preset": "fast",
+  "crf": "50"
+}
