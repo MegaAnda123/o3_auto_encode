@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from args_parser import LaunchArguments, pars_args
+from o3_auto_encode.args_parser import LaunchArguments, pars_args
 
 from o3_auto_encode.encoder import encode_bundle
 from o3_auto_encode.ffmpeg_settings import FFMPEGSettings

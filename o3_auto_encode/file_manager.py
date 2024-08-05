@@ -5,7 +5,7 @@ import re
 import subprocess
 from pathlib import Path
 
-import utils
+from o3_auto_encode import utils
 from dateutil import parser as dateparser
 from tqdm import tqdm
 
