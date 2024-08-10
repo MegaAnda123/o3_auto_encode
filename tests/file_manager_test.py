@@ -32,3 +32,23 @@ def test_generate_bundles() -> None:
             assert result_clip.creation_time == expected_clip.creation_time
             assert result_clip.creation_time_unix == expected_clip.creation_time_unix
             assert result_clip.duration_s == expected_clip.duration_s
+
+
+def test_json_serialization() -> None:
+    clip_path = TEST_ROOT / "test_files/144p/DJI_0237.MP4"
+    clip = file_manager.Clip(clip_path)
+
+    result = clip.__dict__()
+
+    expected = {
+        "name": "DJI_0237.MP4",
+        "duration": "00:03:14.73",
+        "path": str(clip_path.absolute()),
+        "creation_time": "2024-05-16T15:21:44.000000Z",
+        "creation_time_unix": 1715872904.0,
+        "duration_s": 194.73,
+        "delta": None,
+        "frames": 11672,
+    }
+
+    assert result == expected
