@@ -26,3 +26,10 @@ class EncodePreset(Enum):
 
     def __str__(self) -> str:
         return self.value
+
+
+class BundleStatus(Enum):
+    FOUND = "found"
+    PROCESSING = "processing"
+    INTERRUPTED = "interrupted"
+    DONE = "done"

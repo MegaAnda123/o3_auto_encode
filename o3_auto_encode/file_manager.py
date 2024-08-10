@@ -5,14 +5,26 @@ import re
 import subprocess
 from pathlib import Path
 
-from o3_auto_encode import utils
 from dateutil import parser as dateparser
+from enums import BundleStatus
 from tqdm import tqdm
+
+from o3_auto_encode import utils
 
 
 class Clip:
-    """
-    TODO
+    """Class for storing information related to individual video clips.
+
+    Attributes:
+        name: Name of the clip (includes file type suffix).
+        duration: Clip duration as string, format: `hh:mm:ss.ms`.
+        path: Path to the clip file as Path.
+        creation_time: Creation time from video file metadata, example format: `2024-05-16T15:21:44.000000Z`.
+        creation_time_unix: Creation time from video file metadata as unix timestamp.
+        duration_s: Clip duration as float in seconds.
+        delta: Time difference between two clips. Used and added by `generate_bundles` function.
+        frames: Number of frames in clip.
+
     """
 
     name: str
@@ -22,6 +34,7 @@ class Clip:
     creation_time_unix: float
     duration_s: float
     delta: float
+    frames: int
 
     def __init__(self, path: Path | str):
         # TODO better error handling here.
@@ -30,8 +43,7 @@ class Clip:
         ffprobe_string = process.stderr.decode("utf8")
         self.creation_time = re.search(r"\s*creation_time\s*:\s([\w\-:.]*)", ffprobe_string).group(1)
         self.duration = re.search(r"\s*Duration\s*:\s([\w\-:.]*)", ffprobe_string).group(1)
-
-        # TODO add frames as attribute?
+        self.frames = utils.get_video_frames(self.path)
 
     @property
     def name(self) -> str:
@@ -47,8 +59,16 @@ class Clip:
         return float(h) * 3600 + float(m) * 60 + float(s)
 
     def __dict__(self):
-        # TODO implement json serialization.
-        pass
+        return {
+            "name": self.name,
+            "duration": self.duration,
+            "path": str(self.path.absolute()),
+            "creation_time": self.creation_time,
+            "creation_time_unix": self.creation_time_unix,
+            "duration_s": self.duration_s,
+            "delta": self.delta if hasattr(self, "delta") else None,
+            "frames": self.frames,
+        }
 
 
 class Bundle:
@@ -56,24 +76,26 @@ class Bundle:
 
     DJI air unit encodes videos on a FAT32 file system.
     This limits file sizes. DJI splits videos into multiple clips if videos are too long (´>3m14s or > ~3.5GB).
-    This class stores information about what clips belong to this "bundle"(video) etc. TODO explain better.
+    This class stores information about what clips belong to this "bundle"/video.
 
     Attributes:
-        TODO
+        name: Bundle name.
+        clips: Clips belonging to this bundle.
+        creation_time: Creation time (creation time from first clip).
+        status: Bundle status e.g. found, interrupted, processing, done.
+        config: Config used when processing (added when processing is done) #TODO not yet used
 
     """
 
     name: str
     clips: list[Clip]
     creation_time: str
-    # TODO make status enum?
-    status: str
+    status: BundleStatus
     config: str
 
     def __init__(self, clips: list[Clip]):
         # Sort clips by creation time (likely unnecessary, all usages provide pre-sorted clips).
         self.clips = [clip for clip in sorted(clips, key=lambda x: x.creation_time_unix)]
-        # TODO Validate delta, maybe pointless.
         # TODO make name range of clips e.g. clip[0].name to clip[-1].name ?
         self.name = f"{self.clips[0].path.stem}_{self.creation_time.split('T')[0]}.mp4"
 
