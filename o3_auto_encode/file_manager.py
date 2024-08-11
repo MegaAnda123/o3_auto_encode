@@ -6,10 +6,10 @@ import subprocess
 from pathlib import Path
 
 from dateutil import parser as dateparser
-from enums import BundleStatus
 from tqdm import tqdm
 
 from o3_auto_encode import utils
+from o3_auto_encode.enums import BundleStatus
 
 
 class Clip:
