@@ -3,6 +3,8 @@
 import json
 from pathlib import Path
 
+import yaml
+
 from o3_auto_encode import utils
 from o3_auto_encode.enums import Codec, EncodePreset
 
@@ -27,7 +29,7 @@ class FFMPEGSettings:
     input: Path | None
     output: Path | None
 
-    def __init__(self):
+    def __init__(self, path: Path | str = None):
         self.input = None
         self.output = None
         self.codec = Codec.X265
@@ -35,28 +37,30 @@ class FFMPEGSettings:
         self.preset = EncodePreset.SLOWER
         self.concatenation = True
 
-    @classmethod
-    def from_json(cls, path: Path):
-        """Load FFMPEG settings from json file.
+        if path is None:
+            return
 
-        Args:
-            path: Path to json file.
+        # Initialize from file if path is specified.
+        path = Path(path)
+        if not path.is_file():
+            raise FileNotFoundError(f"Could not find file `{path.absolute()}`.")
 
-        Returns:
-            FFMPEG settings object.
+        match path.suffix:
+            case ".yaml":
+                data = yaml.safe_load(path.open())
+            case ".yml":
+                data = yaml.safe_load(path.open())
+            case ".json":
+                data = json.load(path.open())
+            case _:
+                raise ValueError(f"Unsupported file type `{path.suffix}`.")
 
-        """
-        # TODO move to __init__ ??
-        settings = cls()
-        j = json.load(path.open())
-        settings.input = None if j.get("input") is None else Path(j["input"])
-        settings.output = None if j.get("output") is None else Path(j["output"])
-        settings.codec = settings.codec if j.get("codec") is None else Codec(j["codec"])
-        settings.crf = settings.crf if j.get("crf") is None else int(j["crf"])
-        settings.preset = settings.preset if j.get("preset") is None else EncodePreset(j["preset"])
-        settings.concatenation = settings.concatenation if j.get("concatenation") is None else j["concatenation"]
-
-        return settings
+        self.input = None if data.get("input") is None else Path(data["input"])
+        self.output = None if data.get("output") is None else Path(data["output"])
+        self.codec = self.codec if data.get("codec") is None else Codec(data["codec"])
+        self.crf = self.crf if data.get("crf") is None else int(data["crf"])
+        self.preset = self.preset if data.get("preset") is None else EncodePreset(data["preset"])
+        self.concatenation = self.concatenation if data.get("concatenation") is None else data["concatenation"]
 
     def generate_args(self) -> list[str]:
         """Generate FFMPEG command line args for running current configuration stored in FFMPEGSettings object.
