@@ -1,0 +1,5 @@
+codec : "libx265"
+preset : "slow"
+crf : "5"
+input : "test_files/144p"
+output : "/out"
