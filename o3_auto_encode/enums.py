@@ -33,3 +33,23 @@ class BundleStatus(Enum):
     PROCESSING = "processing"
     INTERRUPTED = "interrupted"
     DONE = "done"
+
+
+class LogLevel(Enum):
+    """Custom log levels."""
+
+    NOTSET = 0
+    DEBUG = 10
+    INFO = 20
+    WARNING = 30
+    ERROR = 40
+    CRITICAL = 50
+
+    @classmethod
+    def _missing_(cls, value: str):
+        """Return the Enum member if the value matches the uppercase version of an Enum member value."""
+        if not isinstance(value, str):
+            raise ValueError(f"Can not convert '{value}' to loglevel.")
+        for member in cls:
+            if member.name == value.upper():
+                return member
