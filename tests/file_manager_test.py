@@ -11,10 +11,10 @@ def test_generate_bundles() -> None:
     bundles = file_manager.generate_bundles(path)
 
     clips = [
-        file_manager.Clip(path / "DJI_0237.MP4"),
-        file_manager.Clip(path / "DJI_0238.MP4"),
-        file_manager.Clip(path / "DJI_0239.MP4"),
-        file_manager.Clip(path / "DJI_0240.MP4"),
+        file_manager.Clip.from_path(path / "DJI_0237.MP4"),
+        file_manager.Clip.from_path(path / "DJI_0238.MP4"),
+        file_manager.Clip.from_path(path / "DJI_0239.MP4"),
+        file_manager.Clip.from_path(path / "DJI_0240.MP4"),
     ]
 
     expected = [
@@ -36,7 +36,7 @@ def test_generate_bundles() -> None:
 
 def test_json_serialization() -> None:
     clip_path = TEST_ROOT / "test_files/144p/DJI_0237.MP4"
-    clip = file_manager.Clip(clip_path)
+    clip = file_manager.Clip.from_path(clip_path)
 
     result = clip.__dict__()
 

@@ -34,6 +34,9 @@ class BundleStatus(Enum):
     INTERRUPTED = "interrupted"
     DONE = "done"
 
+    def __str__(self) -> str:
+        return self.value
+
 
 class LogLevel(Enum):
     """Custom log levels."""

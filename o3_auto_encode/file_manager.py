@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
+from typing import Any
 
 from dateutil import parser as dateparser
 from tqdm import tqdm
@@ -33,17 +34,35 @@ class Clip:
     creation_time: str
     creation_time_unix: float
     duration_s: float
-    delta: float
+    delta: float | None
     frames: int
 
-    def __init__(self, path: Path | str):
-        # TODO better error handling here.
+    def __init__(self, path: Path | str, creation_time: str, duration: str, frames: int, delta: int | None = None):
         self.path = Path(path)
+        self.creation_time = creation_time
+        self.duration = duration
+        self.frames = frames
+        self.delta = delta
+
+    @classmethod
+    def from_path(cls, path: Path | str):
+        # TODO better error handling here.
+        path = Path(path)
         process = subprocess.run([utils.get_ffprobe_path(), str(path)], capture_output=True)
         ffprobe_string = process.stderr.decode("utf8")
-        self.creation_time = re.search(r"\s*creation_time\s*:\s([\w\-:.]*)", ffprobe_string).group(1)
-        self.duration = re.search(r"\s*Duration\s*:\s([\w\-:.]*)", ffprobe_string).group(1)
-        self.frames = utils.get_video_frames(self.path)
+        creation_time = re.search(r"\s*creation_time\s*:\s([\w\-:.]*)", ffprobe_string).group(1)
+        duration = re.search(r"\s*Duration\s*:\s([\w\-:.]*)", ffprobe_string).group(1)
+        frames = utils.get_video_frames(path)
+        return cls(path, creation_time, duration, frames)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]):
+        path = data.get("path")
+        creation_time = data.get("creation_time")
+        duration = data.get("duration")
+        frames = data.get("frames")
+        delta = data.get("delta")
+        return cls(path, creation_time, duration, frames, delta)
 
     @property
     def name(self) -> str:
@@ -91,17 +110,36 @@ class Bundle:
     clips: list[Clip]
     creation_time: str
     status: BundleStatus
-    config: str
+    config: str | None
 
     def __init__(self, clips: list[Clip]):
         # Sort clips by creation time (likely unnecessary, all usages provide pre-sorted clips).
         self.clips = [clip for clip in sorted(clips, key=lambda x: x.creation_time_unix)]
         # TODO make name range of clips e.g. clip[0].name to clip[-1].name ?
         self.name = f"{self.clips[0].path.stem}_{self.creation_time.split('T')[0]}.mp4"
+        self.status = BundleStatus.FOUND
+        self.config = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]):
+        bundle = cls([Clip.from_dict(clip) for clip in data["clips"]])
+        bundle.status = bundle.status if data.get("status") is None else data.get("status")
+        bundle.config = data.get("config")
+
+        return bundle
 
     @property
     def creation_time(self) -> str:
         return self.clips[0].creation_time
+
+    def __dict__(self):
+        return {
+            "name": self.name,
+            "status": str(self.status),
+            "creation_time": self.creation_time,
+            "config": self.config,
+            "clips": [clip.__dict__() for clip in self.clips],
+        }
 
 
 def generate_bundles(path: Path | str, max_delta: float = 3.0) -> list[Bundle]:
@@ -118,7 +156,7 @@ def generate_bundles(path: Path | str, max_delta: float = 3.0) -> list[Bundle]:
     path = Path(path)
     clips = []
     for file in tqdm(_get_files(path)):
-        clips.append(Clip(file))
+        clips.append(Clip.from_path(file))
 
     sorted_clips = [clip for clip in sorted(clips, key=lambda x: x.creation_time_unix)]
 

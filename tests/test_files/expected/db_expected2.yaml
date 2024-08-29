@@ -1,0 +1,42 @@
+- clips:
+  - creation_time: '2024-05-16T15:21:44.000000Z'
+    creation_time_unix: 1715872904.0
+    delta: 0.0
+    duration: '00:03:14.73'
+    duration_s: 194.73
+    frames: 11672
+    name: DJI_0237.MP4
+    path: C:\Users\Andre\Desktop\Code\o3_auto_encode\tests\test_files\144p\DJI_0237.MP4
+  - creation_time: '2024-05-16T15:25:00.000000Z'
+    creation_time_unix: 1715873100.0
+    delta: 1.2699999809265137
+    duration: '00:00:55.29'
+    duration_s: 55.29
+    frames: 3314
+    name: DJI_0238.MP4
+    path: C:\Users\Andre\Desktop\Code\o3_auto_encode\tests\test_files\144p\DJI_0238.MP4
+  config: null
+  creation_time: '2024-05-16T15:21:44.000000Z'
+  name: DJI_0237_2024-05-16.mp4
+  status: found
+- clips:
+  - creation_time: '2024-05-16T15:26:51.000000Z'
+    creation_time_unix: 1715873211.0
+    delta: 55.71000003814697
+    duration: '00:03:19.50'
+    duration_s: 199.5
+    frames: 11958
+    name: DJI_0239.MP4
+    path: C:\Users\Andre\Desktop\Code\o3_auto_encode\tests\test_files\144p\DJI_0239.MP4
+  - creation_time: '2024-05-16T15:30:12.000000Z'
+    creation_time_unix: 1715873412.0
+    delta: 1.5
+    duration: '00:01:28.39'
+    duration_s: 88.39
+    frames: 5298
+    name: DJI_0240.MP4
+    path: C:\Users\Andre\Desktop\Code\o3_auto_encode\tests\test_files\144p\DJI_0240.MP4
+  config: null
+  creation_time: '2024-05-16T15:26:51.000000Z'
+  name: DJI_0239_2024-05-16.mp4
+  status: found
