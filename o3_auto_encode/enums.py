@@ -6,7 +6,7 @@ class Codec(Enum):
     X265 = "libx265"
     NV264 = "h264_nvenc"
     NV265 = "h265_nvenc"
-    # TODO add AV1
+    AV1 = "libaom-av1"  # TODO implement av1 better, some settings are still incompatible with aom.
 
     def __str__(self) -> str:
         return self.value
