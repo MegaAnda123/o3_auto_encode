@@ -33,3 +33,24 @@ def test_main(tmp_path, args: LaunchArguments, expected: list[tuple[str, str]]):
         process = subprocess.run([utils.get_ffprobe_path(), str(path)], capture_output=True)
         result = process.stderr.decode("utf-8")
         assert expected_str in result
+
+
+def mock():
+    return 0
+
+
+def temp():
+    try:
+        mock()
+        return 1
+    except KeyboardInterrupt:
+        print("Interrupted")
+        return 0
+
+
+def test_interrupt(mocker):
+    mocker.patch("mock", side_effect=KeyboardInterrupt)
+
+    result = temp()
+
+    assert result == 0
