@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pytest
@@ -29,6 +30,14 @@ def test_db(tmp_path, file_name, expected_file):
         result = f.read()
     with open(expected_path) as f:
         expected = f.read()
+
+    # Replace absolute paths in expected and result data.
+    if Path(expected_file).suffix == ".json":
+        result = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", result)
+        expected = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", expected)
+    else:
+        result = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", result)
+        expected = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", expected)
 
     assert result == expected
 
