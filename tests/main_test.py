@@ -35,13 +35,9 @@ def test_main(tmp_path, args: LaunchArguments, expected: list[tuple[str, str]]):
         assert expected_str in result
 
 
-def mock():
-    return 0
-
-
 def temp():
     try:
-        mock()
+        subprocess.run("")
         return 1
     except KeyboardInterrupt:
         print("Interrupted")
@@ -49,7 +45,7 @@ def temp():
 
 
 def test_interrupt(mocker):
-    mocker.patch("mock", side_effect=KeyboardInterrupt)
+    mocker.patch(subprocess.__name__ + ".run", side_effect=KeyboardInterrupt)
 
     result = temp()
 
