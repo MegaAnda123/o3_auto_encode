@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+import logger
 import yaml
 
 from o3_auto_encode.file_manager import Bundle
@@ -24,7 +25,7 @@ class FileDataBase:
 
     def __init__(self, path: Path | str):
         self.bundles = []
-        self.path = path
+        self.path = Path(path)
 
     def write(self):
         match self.path.suffix:
@@ -37,8 +38,14 @@ class FileDataBase:
             case _:
                 raise ValueError(f"Unsupported file type `{self.path.suffix}`.")
 
+    # TODO make classmethod
     def init_from_file(self):
         """Initialize database from yaml/json file."""
+
+        if not self.path.exists():
+            logger.info("No database file found, skipping initialization.")
+            return
+
         if self.bundles:
             # TODO add to database and do deduplication later?
             raise NotImplementedError("Bundle contains data! Can not initialize non empty database.")

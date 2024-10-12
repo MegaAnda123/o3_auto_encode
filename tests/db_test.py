@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 
 import pytest
@@ -17,7 +16,7 @@ TEST_ROOT = Path(__file__).parent
         ("test.yml", "db_expected2.yaml"),
     ],
 )
-def test_db(tmp_path, file_name, expected_file):
+def test_db(helpers, tmp_path, file_name, expected_file):
     db_path = Path(tmp_path, file_name)
     expected_path = TEST_ROOT / f"test_files/expected/{expected_file}"
 
@@ -26,7 +25,7 @@ def test_db(tmp_path, file_name, expected_file):
     db.bundles = bundles
     db.write()
 
-    assert_file(db_path, expected_path)
+    helpers.test_db_files(db_path, expected_path)
 
 
 @pytest.mark.parametrize(
@@ -36,7 +35,7 @@ def test_db(tmp_path, file_name, expected_file):
         "db_expected2.yaml",
     ],
 )
-def test_file_initialization(tmp_path, file_name):
+def test_file_initialization(helpers, tmp_path, file_name):
     db_path = TEST_ROOT / f"test_files/expected/{file_name}"
 
     db = FileDataBase(db_path)
@@ -46,21 +45,4 @@ def test_file_initialization(tmp_path, file_name):
     db.path = result_path
     db.write()
 
-    assert_file(result_path, db_path)
-
-
-def assert_file(result_path: Path, expected_path: Path) -> None:
-    with open(result_path) as f:
-        result = f.read()
-    with open(expected_path) as f:
-        expected = f.read()
-
-    # Replace absolute paths in expected and result data.
-    if Path(expected_path).suffix == ".json":
-        result = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", result)
-        expected = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", expected)
-    else:
-        result = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", result)
-        expected = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", expected)
-
-    assert result == expected
+    helpers.test_db_files(result_path, db_path)
