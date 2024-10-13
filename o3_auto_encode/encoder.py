@@ -29,7 +29,7 @@ def ffmpeg_with_progress(bundle: Bundle, ffmpeg_setting: FFMPEGSettings) -> None
         raise FileExistsError
 
     process = subprocess.Popen(
-        ffmpeg_setting.generate_args(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        ffmpeg_setting.generate_args(bundle.name), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
     )
 
     total_frames = sum([clip.frames for clip in bundle.clips])

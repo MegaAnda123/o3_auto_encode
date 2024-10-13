@@ -10,10 +10,9 @@ TEST_ROOT = Path(__file__).parent
 
 
 @pytest.mark.parametrize(
-    "args, expected, expected_db",
+    "expected, expected_db",
     [
         (
-            LaunchArguments(str(TEST_ROOT / "test_files/144p"), "", "", 50, "fast"),
             [
                 ("DJI_0237_2024-05-16.mp4", "Duration: 00:04:10.02"),
                 ("DJI_0239_2024-05-16.mp4", "Duration: 00:04:47.89"),
@@ -22,9 +21,8 @@ TEST_ROOT = Path(__file__).parent
         )
     ],
 )
-def test_main(helpers, tmp_path, args: LaunchArguments, expected: list[tuple[str, str]], expected_db: Path):
-    args.output_folder = tmp_path
-    args.json_path = tmp_path / "test.json"
+def test_main(helpers, tmp_path, expected: list[tuple[str, str]], expected_db: Path):
+    args = LaunchArguments(str(helpers.get_test_config(tmp_path)), str(tmp_path / "test.json"))
 
     main.run(args)
 
@@ -39,7 +37,7 @@ def test_main(helpers, tmp_path, args: LaunchArguments, expected: list[tuple[str
 
 
 def test_interrupt(helpers, tmp_path, mocker):
-    args = LaunchArguments(str(TEST_ROOT / "test_files/144p"), str(tmp_path), str(tmp_path / "test.json"), 50, "fast")
+    args = LaunchArguments(str(helpers.get_test_config(tmp_path)), str(tmp_path / "test.json"))
 
     with mocker.patch("o3_auto_encode.main.encode_bundle", side_effect=KeyboardInterrupt):
         main.run(args)
