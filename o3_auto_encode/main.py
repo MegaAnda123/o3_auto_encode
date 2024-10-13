@@ -12,9 +12,7 @@ from o3_auto_encode.file_manager import generate_bundles
 
 def run(launch_args: LaunchArguments) -> None:
     logger.debug(str(launch_args))
-    db = FileDataBase(launch_args.json_path)
-    db.bundles = generate_bundles(launch_args.input_folder)
-    db.init_from_file()
+    db = FileDataBase(launch_args.json_path, generate_bundles(launch_args.input_folder))
 
     for bundle in db.bundles:
         ffmpeg_settings = FFMPEGSettings()

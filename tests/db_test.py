@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import pytest
@@ -39,10 +40,25 @@ def test_file_initialization(helpers, tmp_path, file_name):
     db_path = TEST_ROOT / f"test_files/expected/{file_name}"
 
     db = FileDataBase(db_path)
-    db.init_from_file()
 
     result_path = Path(tmp_path, file_name)
     db.path = result_path
     db.write()
 
     helpers.test_db_files(result_path, db_path)
+
+
+@pytest.mark.parametrize(
+    "db_path, expected_path",
+    [(TEST_ROOT / "test_files/data/partial_db.json", TEST_ROOT / "test_files/expected/partial_expected1.json")],
+)
+def test_init_with_existing_data(helpers, tmp_path, db_path: Path, expected_path: Path):
+    clip_folder = TEST_ROOT / "test_files/144p/"
+
+    tmp_db_path = Path(tmp_path, db_path.name)
+
+    shutil.copy(db_path, tmp_db_path)
+    db = FileDataBase(tmp_db_path, generate_bundles(clip_folder))
+    db.write()
+
+    helpers.test_db_files(tmp_db_path, expected_path)

@@ -23,9 +23,10 @@ class FileDataBase:
     path: Path
     bundles: list[Bundle]
 
-    def __init__(self, path: Path | str):
-        self.bundles = []
+    def __init__(self, path: Path | str, bundles: list[Bundle] = None) -> None:
+        self.bundles = bundles if bundles is not None else []
         self.path = Path(path)
+        self._init_from_file()
 
     def write(self):
         match self.path.suffix:
@@ -38,32 +39,38 @@ class FileDataBase:
             case _:
                 raise ValueError(f"Unsupported file type `{self.path.suffix}`.")
 
-    # TODO make classmethod
-    def init_from_file(self):
+    def _init_from_file(self):
         """Initialize database from yaml/json file."""
 
         if not self.path.exists():
             logger.info("No database file found, skipping initialization.")
             return
 
-        if self.bundles:
-            # TODO add to database and do deduplication later?
-            raise NotImplementedError("Bundle contains data! Can not initialize non empty database.")
-
         match self.path.suffix:
             case ".yaml":
-                self._init_from_yaml()
+                bundles = self._init_from_yaml()
             case ".yml":
-                self._init_from_yaml()
+                bundles = self._init_from_yaml()
             case ".json":
-                self._init_from_json()
+                bundles = self._init_from_json()
             case _:
                 raise ValueError(f"Unsupported file type `{self.path.suffix}`.")
 
-    def _init_from_yaml(self):
-        data = yaml.safe_load(self.path.open())
-        self.bundles = [Bundle.from_dict(bundle) for bundle in data]
+        self.bundles = _merge_bundles(bundles, self.bundles)
 
-    def _init_from_json(self):
+    def _init_from_yaml(self) -> list[Bundle]:
+        data = yaml.safe_load(self.path.open())
+        return [Bundle.from_dict(bundle) for bundle in data]
+
+    def _init_from_json(self) -> list[Bundle]:
         data = json.load(self.path.open())
-        self.bundles = [Bundle.from_dict(bundle) for bundle in data]
+        return [Bundle.from_dict(bundle) for bundle in data]
+
+
+def _merge_bundles(bundles1: list[Bundle], bundles2: list[Bundle]) -> list[Bundle]:
+    d1 = {bundle.name: bundle for bundle in bundles1}
+    d2 = {bundle.name: bundle for bundle in bundles2}
+
+    merged = {**d2, **d1}
+
+    return [value for key, value in sorted(merged.items())]
