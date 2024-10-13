@@ -62,8 +62,11 @@ class FFMPEGSettings:
         self.preset = self.preset if data.get("preset") is None else EncodePreset(data["preset"])
         self.concatenation = self.concatenation if data.get("concatenation") is None else data["concatenation"]
 
-    def generate_args(self) -> list[str]:
+    def generate_args(self, output_file_name: str) -> list[str]:
         """Generate FFMPEG command line args for running current configuration stored in FFMPEGSettings object.
+
+        Args:
+            output_file_name: Output file name.
 
         Returns:
             List of command line args for running current configuration stored in FFMPEGSettings object.
@@ -86,5 +89,5 @@ class FFMPEGSettings:
             str(self.crf),
             "-preset",
             str(self.preset),
-            str(self.output.absolute()),
+            str(Path(self.output / output_file_name).absolute()),
         ]
