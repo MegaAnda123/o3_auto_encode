@@ -1,6 +1,7 @@
 out
 venv
 temp
+tests
 ffmpeg.exe
 ffprobe.exe
 .git

@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+import logger
 from dateutil import parser as dateparser
 from tqdm import tqdm
 
@@ -156,6 +157,8 @@ def generate_bundles(path: Path | str, max_delta: float = 3.0) -> list[Bundle]:
     path = Path(path)
     clips = []
     for file in tqdm(_get_files(path)):
+        logger.debug(str(file.absolute()))
+        # TODO check path suffix
         clips.append(Clip.from_path(file))
 
     sorted_clips = [clip for clip in sorted(clips, key=lambda x: x.creation_time_unix)]

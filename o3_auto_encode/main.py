@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from db import FileDataBase
 from enums import BundleStatus
 
@@ -10,6 +12,7 @@ from o3_auto_encode.file_manager import generate_bundles
 
 def run(launch_args: LaunchArguments) -> None:
     logger.debug(str(launch_args))
+    logger.debug(str(Path.cwd()))
     ffmpeg_settings = FFMPEGSettings(launch_args.config_path)
     db = FileDataBase(launch_args.json_path, generate_bundles(ffmpeg_settings.input))
 
