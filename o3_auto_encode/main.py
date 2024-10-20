@@ -1,4 +1,6 @@
+import signal
 from pathlib import Path
+from types import FrameType
 
 from db import FileDataBase
 from enums import BundleStatus
@@ -20,16 +22,27 @@ def run(launch_args: LaunchArguments) -> None:
         bundle.status = BundleStatus.PROCESSING
         try:
             encode_bundle(bundle, ffmpeg_settings)
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, NotADirectoryError):
             bundle.status = BundleStatus.INTERRUPTED
             db.write()
             logger.info("Encoding interrupted.")
+            # TODO resume interrupted videos.
             return
 
         bundle.status = BundleStatus.DONE
         db.write()
 
 
+def exit_gracefully(signum: int, frame: FrameType):
+    """Gracefully exit when sigterm is called by docker."""
+    logger.debug(str(signum))
+    logger.debug(str(frame))
+    raise SystemExit(0)
+
+
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, exit_gracefully)
+    signal.signal(signal.SIGTERM, exit_gracefully)
+
     args = pars_args()
     run(args)
