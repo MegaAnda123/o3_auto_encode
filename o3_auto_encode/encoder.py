@@ -43,6 +43,6 @@ def ffmpeg_with_progress(bundle: Bundle, ffmpeg_setting: FFMPEGSettings) -> None
                         pbar.refresh()
                     except AttributeError:
                         pass
-        except KeyboardInterrupt as e:
+        except (KeyboardInterrupt, SystemExit) as e:
             process.kill()
             raise KeyboardInterrupt() from e
