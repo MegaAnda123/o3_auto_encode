@@ -34,11 +34,15 @@ def ffmpeg_with_progress(bundle: Bundle, ffmpeg_setting: FFMPEGSettings) -> None
 
     total_frames = sum([clip.frames for clip in bundle.clips])
     with tqdm(total=total_frames, desc=f"Encoding: {bundle.name}") as pbar:
-        for line in iter(process.stderr.readline, ""):
-            if line.startswith("frame="):
-                try:
-                    frame = re.match(r"frame=\s*(\d+)", line).group(1)
-                    pbar.n = int(frame)
-                    pbar.refresh()
-                except AttributeError:
-                    pass
+        try:
+            for line in iter(process.stderr.readline, ""):
+                if line.startswith("frame="):
+                    try:
+                        frame = re.match(r"frame=\s*(\d+)", line).group(1)
+                        pbar.n = int(frame)
+                        pbar.refresh()
+                    except AttributeError:
+                        pass
+        except KeyboardInterrupt as e:
+            process.kill()
+            raise KeyboardInterrupt() from e
