@@ -1,0 +1,5 @@
+codec: "libx265"
+preset: "slower"
+crf: 30
+input: "/in"
+output: "/out"
