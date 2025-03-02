@@ -2,12 +2,11 @@ import signal
 from pathlib import Path
 from types import FrameType
 
-from db import FileDataBase
-from enums import BundleStatus
-
-from o3_auto_encode import logger
+from o3_auto_encode import logger, utils
 from o3_auto_encode.args_parser import LaunchArguments, pars_args
+from o3_auto_encode.db import FileDataBase
 from o3_auto_encode.encoder import encode_bundle
+from o3_auto_encode.enums import BundleStatus
 from o3_auto_encode.ffmpeg_settings import FFMPEGSettings
 from o3_auto_encode.file_manager import generate_bundles
 
@@ -19,6 +18,8 @@ def run(launch_args: LaunchArguments) -> None:
     db = FileDataBase(launch_args.json_path, generate_bundles(ffmpeg_settings.input))
 
     for bundle in db.bundles:
+        if bundle.status == BundleStatus.INTERRUPTED:
+            utils.clean_up_interrupted_video(bundle, ffmpeg_settings.output)
         bundle.status = BundleStatus.PROCESSING
         try:
             encode_bundle(bundle, ffmpeg_settings)

@@ -1,6 +1,11 @@
+import os
 import platform
 import subprocess
 from pathlib import Path
+
+from file_manager import Bundle
+
+from o3_auto_encode import logger
 
 
 def _get_project_root() -> Path:
@@ -61,3 +66,18 @@ def get_video_frames(video_path: Path | str) -> int:
     )
 
     return int(process.stdout.strip())
+
+
+def clean_up_interrupted_video(bundle: Bundle, out_path: Path) -> None:
+    """Remove interrupted video based on path in bundle.
+
+    Args:
+        bundle: Interrupted video bundle.
+        out_path: Target output path for encoding.
+
+    """
+    logger.warning(f"Found interrupted video, deleting unfinished video '{bundle.name}'.")
+
+    if (path := Path(out_path / bundle.name)).is_file():
+        logger.info(f"Removing '{path.absolute()}'.")
+        os.remove(path)

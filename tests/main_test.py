@@ -5,6 +5,8 @@ import pytest
 
 from o3_auto_encode import main, utils
 from o3_auto_encode.args_parser import LaunchArguments
+from o3_auto_encode.db import FileDataBase
+from o3_auto_encode.enums import BundleStatus
 
 TEST_ROOT = Path(__file__).parent
 
@@ -45,4 +47,22 @@ def test_interrupt(helpers, tmp_path, mocker):
     result_path = tmp_path / "test.json"
     expected_path = TEST_ROOT / "test_files/expected/interrupt_expected.json"
 
+    helpers.test_db_files(result_path, expected_path)
+
+
+def test_resume_interrupted(helpers, tmp_path):
+    args = LaunchArguments(str(helpers.get_test_config(tmp_path)), str(tmp_path / "test.json"))
+
+    main.run(args)
+
+    db = FileDataBase(tmp_path / "test.json")
+    db.bundles[0].status = BundleStatus.INTERRUPTED
+    db.bundles[1].status = BundleStatus.INTERRUPTED
+    db.write()
+
+    # Rerun with interrupted video in db.
+    main.run(args)
+
+    result_path = tmp_path / "test.json"
+    expected_path = TEST_ROOT / "test_files/expected/main_expected.json"
     helpers.test_db_files(result_path, expected_path)

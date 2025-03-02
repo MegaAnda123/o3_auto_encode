@@ -6,11 +6,10 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-import logger
 from dateutil import parser as dateparser
 from tqdm import tqdm
 
-from o3_auto_encode import utils
+from o3_auto_encode import logger, utils
 from o3_auto_encode.enums import BundleStatus
 
 
@@ -125,6 +124,7 @@ class Bundle:
     def from_dict(cls, data: dict[str, Any]):
         bundle = cls([Clip.from_dict(clip) for clip in data["clips"]])
         bundle.status = bundle.status if data.get("status") is None else data.get("status")
+        bundle.status = BundleStatus(bundle.status)
         bundle.config = data.get("config")
 
         return bundle
@@ -133,6 +133,7 @@ class Bundle:
     def creation_time(self) -> str:
         return self.clips[0].creation_time
 
+    # TODO use __iter__ instead
     def __dict__(self):
         return {
             "name": self.name,

@@ -3,9 +3,9 @@
 import json
 from pathlib import Path
 
-import logger
 import yaml
 
+from o3_auto_encode import logger
 from o3_auto_encode.file_manager import Bundle
 
 
