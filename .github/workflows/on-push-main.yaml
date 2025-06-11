@@ -1,0 +1,27 @@
+name: Push to main
+on:
+  push:
+    branches: [main]
+
+jobs:
+  lint-code:
+    name: Code Quality
+    uses: ./.github/workflows/lint.yaml
+
+  test:
+    name: Run tests
+    uses: ./.github/workflows/test.yaml
+
+  build:
+    name: Build project
+    uses: ./.github/workflows/build.yaml
+
+
+  publish-container-image:
+    name: Publish container image
+    uses: ./.github/workflows/publish-image.yaml
+
+  release-please:
+    name: Run Release Please
+    uses: ./.github/workflows/release-please.yaml
+    secrets: inherit

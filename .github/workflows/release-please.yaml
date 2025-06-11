@@ -1,0 +1,44 @@
+name: 🔖 Release please
+on:
+  workflow_call:
+    secrets:
+      RELEASE_PLEASE_TOKEN:
+        description: A PAT for the release-please action
+        required: true
+    outputs:
+      O3_auto_encode_released:
+        description: Whether release-please created a release for O3_auto_encode
+        value: ${{ jobs.release_please.outputs.O3_auto_encode_released }}
+      O3_auto_encode_tag:
+        description: The Release tag for O3_auto_encode, if created (e.g. v1.0.0)
+        value: ${{ jobs.release_please.outputs.O3_auto_encode_tag }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release_please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release O3_auto_encode
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          include-component-in-tag: true
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+    outputs:
+      O3_auto_encode_released: ${{ contains(fromJson(steps.release.outputs.paths_released), 'O3_auto_encode') }}
+      O3_auto_encode_tag: ${{ steps.release.outputs['O3_auto_encode--tag_name'] }}
+
+  publish-O3_auto_encode-executables:
+    name: Build and publish O3_auto_encode executables and wheel
+    needs: [release_please]
+    if: needs.release_please.outputs.O3_auto_encode_released
+    uses: ./.github/workflows/build.yaml
+    with:
+      build-api: false
+      build-O3_auto_encode: true
+      build-executable: true
+      release-tag: ${{ needs.release_please.outputs.O3_auto_encode_tag }}

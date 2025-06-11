@@ -1,0 +1,54 @@
+name: 💄 Code quality
+on:
+  workflow_call:
+
+jobs:
+  pre-commit:
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        hook: ['builtin', 'poetry-check', 'isort', 'black', 'flake8', 'pyupgrade']
+        include:
+          - hook: builtin
+            skip: black,flake8,isort,no-commit-to-branch,poetry-check,pyupgrade
+          - hook: poetry-check
+            hook_id: poetry-check
+          - hook: isort
+            hook_id: isort
+          - hook: black
+            hook_id: black
+          - hook: flake8
+            hook_id: flake8
+          - hook: pyupgrade
+            hook_id: pyupgrade
+
+    name: Run pre-commit hook
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Echo current pre-commit hook
+        run: echo "Running pre-commit ${{ matrix.hook }}"
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Get Python version
+        id: get-py-version
+        run: echo "py_version=$(python -V | awk -F' ' '{ print $2 }')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ steps.get-py-version.outputs.py_version }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-${{ steps.get-py-version.outputs.py_version }}-${{ runner.os }}-${{ runner.arch }}
+            pre-commit-${{ steps.get-py-version.outputs.py_version }}-${{ runner.os }}
+            pre-commit-${{ steps.get-py-version.outputs.py_version }}
+            pre-commit
+
+      - name: Running ${{ matrix.hook }} pre-commit hooks
+        run: SKIP="${{ matrix.skip }}" pre-commit run ${{ matrix.hook_id }} --all-files

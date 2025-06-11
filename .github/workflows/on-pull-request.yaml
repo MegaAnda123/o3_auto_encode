@@ -1,0 +1,20 @@
+name: Pull Request
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint-code:
+    name: Code Quality
+    uses: ./.github/workflows/lint.yaml
+
+  test:
+    name: Run tests
+    uses: ./.github/workflows/test.yaml
+
+# TODO add todo tacker workflow?
+
+# TODO
+#  build:
+#    name: Build project
+#    uses: ./.github/workflows/build.yaml
