@@ -33,6 +33,10 @@ jobs:
       - name: Install poetry
         run: pipx install poetry==1.8.3
 
+      - name: Install ffmpeg on Linux
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Set up Python ${{ matrix.py_version }}
         id: setup-python
         uses: actions/setup-python@v5
