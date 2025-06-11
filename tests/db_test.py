@@ -26,20 +26,7 @@ def test_db(tmp_path, file_name, expected_file):
     db.bundles = bundles
     db.write()
 
-    with open(db_path) as f:
-        result = f.read()
-    with open(expected_path) as f:
-        expected = f.read()
-
-    # Replace absolute paths in expected and result data.
-    if Path(expected_file).suffix == ".json":
-        result = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", result)
-        expected = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", expected)
-    else:
-        result = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", result)
-        expected = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", expected)
-
-    assert result == expected
+    assert_file(db_path, expected_path)
 
 
 @pytest.mark.parametrize(
@@ -59,9 +46,21 @@ def test_file_initialization(tmp_path, file_name):
     db.path = result_path
     db.write()
 
+    assert_file(result_path, db_path)
+
+
+def assert_file(result_path: Path, expected_path: Path) -> None:
     with open(result_path) as f:
         result = f.read()
-    with open(db_path) as f:
+    with open(expected_path) as f:
         expected = f.read()
+
+    # Replace absolute paths in expected and result data.
+    if Path(expected_path).suffix == ".json":
+        result = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", result)
+        expected = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", expected)
+    else:
+        result = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", result)
+        expected = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", expected)
 
     assert result == expected
