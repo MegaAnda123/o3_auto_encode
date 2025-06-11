@@ -173,12 +173,27 @@ def generate_bundles(path: Path | str, max_delta: float = 3.0) -> list[Bundle]:
 
 
 def _get_files(folder_path: str | Path) -> list[Path]:
-    # TODO only get files encoded by "DJI DEFAULT ENCODING" or similar.
+    """Retrieve valid video files using ffprobe.
+
+    Args:
+        folder_path: Path to the folder containing files to scan.
+
+    Returns:
+        A list of paths to valid video files.
+    """
     folder_path = Path(folder_path)
 
     result = []
     for file in os.listdir(folder_path):
-        result.append(Path(os.path.join(folder_path, file)))
+        file_path = Path(os.path.join(folder_path, file))
+
+        # Use ffprobe to check if the file is a valid video file
+        process = subprocess.run(
+            [utils.get_ffprobe_path(), "-v", "error", "-show_streams", "-select_streams", "v:0", str(file_path)],
+            capture_output=True,
+        )
+        if process.returncode == 0:
+            result.append(file_path)
 
     return result
 
