@@ -210,3 +210,18 @@ def _add_delta(clips: list[Clip]) -> list[Clip]:
         clip.delta = t2 - t1
         t1 = t2 + d
     return clips
+
+
+def clean_up_interrupted_video(bundle: Bundle, out_path: Path) -> None:
+    """Remove interrupted video based on path in bundle.
+
+    Args:
+        bundle: Interrupted video bundle.
+        out_path: Target output path for encoding.
+
+    """
+    logger.warning(f"Found interrupted video, deleting unfinished video '{bundle.name}'.")
+
+    if (path := Path(out_path / bundle.name)).is_file():
+        logger.info(f"Removing '{path.absolute()}'.")
+        os.remove(path)
