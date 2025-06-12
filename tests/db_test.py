@@ -1,4 +1,4 @@
-import re
+import shutil
 from pathlib import Path
 
 import pytest
@@ -17,7 +17,7 @@ TEST_ROOT = Path(__file__).parent
         ("test.yml", "db_expected2.yaml"),
     ],
 )
-def test_db(tmp_path, file_name, expected_file):
+def test_db(helpers, tmp_path, file_name, expected_file):
     db_path = Path(tmp_path, file_name)
     expected_path = TEST_ROOT / f"test_files/expected/{expected_file}"
 
@@ -26,7 +26,7 @@ def test_db(tmp_path, file_name, expected_file):
     db.bundles = bundles
     db.write()
 
-    assert_file(db_path, expected_path)
+    helpers.test_db_files(db_path, expected_path)
 
 
 @pytest.mark.parametrize(
@@ -36,31 +36,29 @@ def test_db(tmp_path, file_name, expected_file):
         "db_expected2.yaml",
     ],
 )
-def test_file_initialization(tmp_path, file_name):
+def test_file_initialization(helpers, tmp_path, file_name):
     db_path = TEST_ROOT / f"test_files/expected/{file_name}"
 
     db = FileDataBase(db_path)
-    db.init_from_file()
 
     result_path = Path(tmp_path, file_name)
     db.path = result_path
     db.write()
 
-    assert_file(result_path, db_path)
+    helpers.test_db_files(result_path, db_path)
 
 
-def assert_file(result_path: Path, expected_path: Path) -> None:
-    with open(result_path) as f:
-        result = f.read()
-    with open(expected_path) as f:
-        expected = f.read()
+@pytest.mark.parametrize(
+    "db_path, expected_path",
+    [(TEST_ROOT / "test_files/data/partial_db.json", TEST_ROOT / "test_files/expected/partial_expected1.json")],
+)
+def test_init_with_existing_data(helpers, tmp_path, db_path: Path, expected_path: Path):
+    clip_folder = TEST_ROOT / "test_files/144p/"
 
-    # Replace absolute paths in expected and result data.
-    if Path(expected_path).suffix == ".json":
-        result = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", result)
-        expected = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", expected)
-    else:
-        result = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", result)
-        expected = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", expected)
+    tmp_db_path = Path(tmp_path, db_path.name)
 
-    assert result == expected
+    shutil.copy(db_path, tmp_db_path)
+    db = FileDataBase(tmp_db_path, generate_bundles(clip_folder))
+    db.write()
+
+    helpers.test_db_files(tmp_db_path, expected_path)

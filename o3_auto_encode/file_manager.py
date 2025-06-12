@@ -9,7 +9,7 @@ from typing import Any
 from dateutil import parser as dateparser
 from tqdm import tqdm
 
-from o3_auto_encode import utils
+from o3_auto_encode import logger, utils
 from o3_auto_encode.enums import BundleStatus
 
 
@@ -124,6 +124,7 @@ class Bundle:
     def from_dict(cls, data: dict[str, Any]):
         bundle = cls([Clip.from_dict(clip) for clip in data["clips"]])
         bundle.status = bundle.status if data.get("status") is None else data.get("status")
+        bundle.status = BundleStatus(bundle.status)
         bundle.config = data.get("config")
 
         return bundle
@@ -132,6 +133,7 @@ class Bundle:
     def creation_time(self) -> str:
         return self.clips[0].creation_time
 
+    # TODO use __iter__ instead
     def __dict__(self):
         return {
             "name": self.name,
@@ -156,6 +158,8 @@ def generate_bundles(path: Path | str, max_delta: float = 3.0) -> list[Bundle]:
     path = Path(path)
     clips = []
     for file in tqdm(_get_files(path)):
+        logger.debug(str(file.absolute()))
+        # TODO check path suffix
         clips.append(Clip.from_path(file))
 
     sorted_clips = [clip for clip in sorted(clips, key=lambda x: x.creation_time_unix)]
@@ -206,3 +210,18 @@ def _add_delta(clips: list[Clip]) -> list[Clip]:
         clip.delta = t2 - t1
         t1 = t2 + d
     return clips
+
+
+def clean_up_interrupted_video(bundle: Bundle, out_path: Path) -> None:
+    """Remove interrupted video based on path in bundle.
+
+    Args:
+        bundle: Interrupted video bundle.
+        out_path: Target output path for encoding.
+
+    """
+    logger.warning(f"Found interrupted video, deleting unfinished video '{bundle.name}'.")
+
+    if (path := Path(out_path / bundle.name)).is_file():
+        logger.info(f"Removing '{path.absolute()}'.")
+        os.remove(path)
