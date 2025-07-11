@@ -3,8 +3,8 @@
   "packages": {
     "o3_auto_encode": {
       "release-type": "python",
-      "package-name": "fluidmagic",
-      "pull-request-header": "Release-Please: Fluidmagic Release",
+      "package-name": "o3_auto_encode",
+      "pull-request-header": "Release-Please: O3_auto_encode Release",
       "pull-request-title-pattern": "chore${scope}: Release${component} ${version}",
       "bump-minor-pre-major": false
     }
