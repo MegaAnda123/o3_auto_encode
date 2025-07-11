@@ -1,0 +1,6 @@
+services:
+  api:
+    image: ghcr.io/MegaAnda123/o3_auto_encode/o3_auto_encode:${IMAGE_TAG:-latest}
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
