@@ -4,7 +4,7 @@
     "o3_auto_encode": {
       "release-type": "python",
       "package-name": "o3_auto_encode",
-      "pull-request-header": "Release-Please: O3_auto_encode Release",
+      "pull-request-header": "Release-Please: o3_auto_encode Release",
       "pull-request-title-pattern": "chore${scope}: Release${component} ${version}",
       "bump-minor-pre-major": true
     }
