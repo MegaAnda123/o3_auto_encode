@@ -12,11 +12,6 @@ jobs:
     name: Run tests
     uses: ./.github/workflows/test.yaml
 
-  build:
-    name: Build project
-    uses: ./.github/workflows/build.yaml
-
-
   publish-container-image:
     name: Publish container image
     uses: ./.github/workflows/publish-image.yaml
