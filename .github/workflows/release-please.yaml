@@ -32,13 +32,10 @@ jobs:
       O3_auto_encode_released: ${{ contains(fromJson(steps.release.outputs.paths_released), 'O3_auto_encode') }}
       O3_auto_encode_tag: ${{ steps.release.outputs['O3_auto_encode--tag_name'] }}
 
-  publish-O3_auto_encode-executables:
-    name: Build and publish O3_auto_encode executables and wheel
+  publish-O3_auto_encode-image:
+    name: Build and publish O3_auto_encode docker image
     needs: [release_please]
     if: needs.release_please.outputs.O3_auto_encode_released
-    uses: ./.github/workflows/build.yaml
+    uses: ./.github/workflows/publish-image.yaml
     with:
-      build-api: false
-      build-O3_auto_encode: true
-      build-executable: true
-      release-tag: ${{ needs.release_please.outputs.O3_auto_encode_tag }}
+      image-tag: ${{ needs.release_please.outputs.O3_auto_encode_tag }}
