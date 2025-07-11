@@ -1,0 +1,9 @@
+name: Pull Request Edited
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
+
+jobs:
+  lint-pr-title:
+    name: Lint PR title
+    uses: ./.github/workflows/conventional-pr-title.yaml

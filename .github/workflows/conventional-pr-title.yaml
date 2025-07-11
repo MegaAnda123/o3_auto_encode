@@ -1,0 +1,16 @@
+name: 💄 Lint PR title
+on: [workflow_call]
+
+permissions:
+  pull-requests: read
+  statuses: write
+
+jobs:
+  lint-pr:
+    name: Conventional commit compliance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lint pull request title
+        uses: jef/conventional-commits-pr-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

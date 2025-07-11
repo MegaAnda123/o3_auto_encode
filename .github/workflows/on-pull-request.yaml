@@ -13,8 +13,3 @@ jobs:
     uses: ./.github/workflows/test.yaml
 
 # TODO add todo tacker workflow?
-
-# TODO
-#  build:
-#    name: Build project
-#    uses: ./.github/workflows/build.yaml
