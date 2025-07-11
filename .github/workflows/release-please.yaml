@@ -29,7 +29,6 @@ jobs:
           include-component-in-tag: true
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
     outputs:
-      O3_auto_encode_released: ${{ contains(fromJson(steps.release.outputs.paths_released), 'O3_auto_encode') }}
       O3_auto_encode_tag: ${{ steps.release.outputs['O3_auto_encode--tag_name'] }}
 
   publish-O3_auto_encode-image:
