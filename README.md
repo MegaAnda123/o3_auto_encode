@@ -15,5 +15,4 @@ o3_auto_encode will concatenate and re-encode these clips to one file.
 This will yield a final video file smaller than the sum of all the clips depending on encoding settings.
 
 
-
 TODO add quick start, docker setup, etc.
