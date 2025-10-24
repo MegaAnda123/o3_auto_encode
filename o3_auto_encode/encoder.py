@@ -5,6 +5,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
+from o3_auto_encode import logger
 from o3_auto_encode.ffmpeg_settings import FFMPEGSettings
 from o3_auto_encode.file_manager import Bundle
 
@@ -33,9 +34,10 @@ def ffmpeg_with_progress(bundle: Bundle, ffmpeg_setting: FFMPEGSettings) -> None
     )
 
     total_frames = sum([clip.frames for clip in bundle.clips])
-    with tqdm(total=total_frames, desc=f"Encoding: {bundle.name}") as pbar:
+    with tqdm(total=total_frames, desc=f"Encoding: {bundle.name}", unit="frames") as pbar:
         try:
             for line in iter(process.stderr.readline, ""):
+                logger.debug(line)
                 if line.startswith("frame="):
                     try:
                         frame = re.match(r"frame=\s*(\d+)", line).group(1)

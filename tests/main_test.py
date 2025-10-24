@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 
@@ -36,6 +37,14 @@ def test_main(helpers, tmp_path, expected: list[tuple[str, str]], expected_db: P
         assert expected_str in result
 
     helpers.test_db_files(tmp_path / "test.json", expected_db)
+
+def test_main_4k_av1_nvenc(helpers, tmp_path):
+    """Test nvenc av1 encoder. No assertion is done, just checking if run completes without errors."""
+    if os.environ.get("4k") == "false":
+        pytest.skip("4k flag false, skipping 4k tests")
+    args = LaunchArguments(str(helpers.get_test_config_4k(tmp_path)), str(tmp_path / "test.json"))
+
+    main.run(args)
 
 
 def test_interrupt(helpers, tmp_path, mocker):

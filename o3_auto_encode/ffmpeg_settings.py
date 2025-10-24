@@ -75,6 +75,12 @@ class FFMPEGSettings:
         if not self.concatenation:
             raise NotImplementedError
 
+        if self.codec in [Codec.H264_NVENC, Codec.H265_NVENC, Codec.AV1_NVENC]:
+            return self._generate_gpu_args(output_file_name)
+        else:
+            return self._generate_cpu_args(output_file_name)
+
+    def _generate_cpu_args(self, output_file_name: str) -> list[str]:
         return [
             utils.get_ffmpeg_path(),
             "-safe",
@@ -90,4 +96,45 @@ class FFMPEGSettings:
             "-preset",
             str(self.preset),
             str(Path(self.output / output_file_name).absolute()),
+            "-y",
+        ]
+
+    def _generate_gpu_args(self, output_file_name: str) -> list[str]:
+        # Map EncodePreset to NVENC numeric presets (p1..p7). Default to p7 for slower presets.
+        preset_map = {
+            EncodePreset.ULTRAFAST: "p1",
+            EncodePreset.SUPERFAST: "p2",
+            EncodePreset.VERYFAST: "p3",
+            EncodePreset.FASTER: "p4",
+            EncodePreset.FAST: "p5",
+            EncodePreset.MEDIUM: "p5",
+            EncodePreset.SLOW: "p6",
+            EncodePreset.SLOWER: "p7",
+            EncodePreset.VERYSLOW: "p7",
+            EncodePreset.PLACEBO: "p7",
+        }
+        preset_str = preset_map.get(self.preset, "p7")
+
+        return [
+            utils.get_ffmpeg_path(),
+            "-safe",
+            "0",
+            "-f",
+            "concat",
+            "-i",
+            str(self.input.absolute()),
+            "-c:v",
+            str(self.codec),
+            "-preset",
+            preset_str,
+            "-cq",
+            str(self.crf),
+            "-spatial-aq",
+            "1",
+            "-aq-strength",
+            "15",
+            "-pix_fmt",
+            "p010le",
+            str(Path(self.output / output_file_name).absolute()),
+            "-y",
         ]

@@ -4,9 +4,10 @@ from enum import Enum
 class Codec(Enum):
     X264 = "libx264"
     X265 = "libx265"
-    NV264 = "h264_nvenc"
-    NV265 = "h265_nvenc"
     AV1 = "libaom-av1"  # TODO implement av1 better, some settings are still incompatible with aom.
+    H264_NVENC = "h264_nvenc"
+    H265_NVENC = "h265_nvenc"
+    AV1_NVENC = "av1_nvenc"
 
     def __str__(self) -> str:
         return self.value
