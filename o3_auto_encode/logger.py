@@ -12,6 +12,11 @@ def set_level(level: LogLevel | str | int) -> None:
     _level = LogLevel(level).value
 
 
+def get_level() -> LogLevel:
+    global _level
+    return LogLevel(_level)
+
+
 def _format_message(message: str, level: LogLevel) -> str:
     """Format string to have message level on start of every line."""
     lines = message.splitlines(keepends=True)
