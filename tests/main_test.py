@@ -38,6 +38,7 @@ def test_main(helpers, tmp_path, expected: list[tuple[str, str]], expected_db: P
 
     helpers.test_db_files(tmp_path / "test.json", expected_db)
 
+
 def test_main_4k_av1_nvenc(helpers, tmp_path):
     """Test nvenc av1 encoder. No assertion is done, just checking if run completes without errors."""
     if os.environ.get("4k") == "false":

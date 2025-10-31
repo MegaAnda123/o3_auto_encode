@@ -69,10 +69,11 @@ class Helpers:
             yaml.dump(config, f)
         return config_path
 
-def pytest_sessionstart(session):
 
+def pytest_sessionstart(session):
     if (short := session.config.getvalue("--4k")) is not None:
         os.environ["4k"] = str(short).lower()
+
 
 @pytest.fixture
 def helpers() -> Helpers:
