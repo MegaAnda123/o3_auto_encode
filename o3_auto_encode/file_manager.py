@@ -102,7 +102,7 @@ class Bundle:
         clips: Clips belonging to this bundle.
         creation_time: Creation time (creation time from first clip).
         status: Bundle status e.g. found, interrupted, processing, done.
-        config: Config used when processing (added when processing is done) #TODO not yet used
+        config: Encoding configuration summary used when processing (set once encoding finishes).
 
     """
 
@@ -110,7 +110,7 @@ class Bundle:
     clips: list[Clip]
     creation_time: str
     status: BundleStatus
-    config: str | None
+    config: dict[str, str] | None
 
     def __init__(self, clips: list[Clip]):
         # Sort clips by creation time (likely unnecessary, all usages provide pre-sorted clips).

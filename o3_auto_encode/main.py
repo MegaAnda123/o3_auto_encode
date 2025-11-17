@@ -29,8 +29,11 @@ def run(launch_args: LaunchArguments) -> None:
             logger.info("Encoding interrupted.")
             return None
 
+        bundle.config = ffmpeg_settings.summary()
+        bundle.config["list"] = ", ".join([str(c.path) for c in bundle.clips])
         bundle.status = BundleStatus.DONE
         db.write()
+    return None
 
 
 def exit_gracefully(signum: int, frame: FrameType):

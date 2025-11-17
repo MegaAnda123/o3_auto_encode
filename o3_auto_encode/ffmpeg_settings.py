@@ -138,3 +138,12 @@ class FFMPEGSettings:
             str(Path(self.output / output_file_name).absolute()),
             "-y",
         ]
+
+    def summary(self) -> dict[str, str]:
+        """Return a concise, stable summary string of the active encoding settings."""
+        result = {}
+        for k, v in self.__dict__.items():
+            result[k] = str(v)
+        full_command = " ".join(self.generate_args(str(self.output)))
+        result["command"] = full_command
+        return result

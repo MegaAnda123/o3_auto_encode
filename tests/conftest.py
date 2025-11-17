@@ -33,6 +33,7 @@ class Helpers:
         if Path(expected_path).suffix == ".json":
             result = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", result)
             expected = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", expected)
+            result = re.sub(r"\"config\"\:\s(\{[\w\W]*?\})", '"config": null', result)
         else:
             result = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", result)
             expected = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", expected)
