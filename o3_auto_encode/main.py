@@ -14,10 +14,15 @@ from o3_auto_encode.file_manager import clean_up_interrupted_video, generate_bun
 def run(launch_args: LaunchArguments) -> None:
     logger.debug(str(launch_args))
     logger.debug(str(Path.cwd()))
+
     ffmpeg_settings = FFMPEGSettings(launch_args.config_path)
-    db = FileDataBase(launch_args.json_path, generate_bundles(ffmpeg_settings.input))
+    completed_clips = [clip.path for clip in FileDataBase(launch_args.json_path).all_done_clips]
+    db = FileDataBase(launch_args.json_path, generate_bundles(ffmpeg_settings.input, ignore_list=completed_clips))
 
     for bundle in db.bundles:
+        if bundle.status == BundleStatus.DONE:
+            logger.info(f"Skipping already processed clips: {bundle.name}")
+            continue
         if bundle.status == BundleStatus.INTERRUPTED:
             clean_up_interrupted_video(bundle, ffmpeg_settings.output)
         bundle.status = BundleStatus.PROCESSING

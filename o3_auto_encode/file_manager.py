@@ -144,22 +144,30 @@ class Bundle:
         }
 
 
-def generate_bundles(path: Path | str, max_delta: float = 3.0) -> list[Bundle]:
+def generate_bundles(path: Path | str, max_delta: float = 3.0, ignore_list: list[Path | str] = None) -> list[Bundle]:
     """Generates list of bundles from path to folder containing air unit clips.
 
     Args:
         path: Path to folder containing air unit clips.
         max_delta: Max delta in seconds, used to determine what clip belongs to this bundle.
+        ignore_list: List of paths to ignore.
 
     Returns:
         List of bundle objects.
 
     """
+    ignore_list = ignore_list or []
     path = Path(path)
     clips = []
     for file in tqdm(_get_files(path)):
         logger.debug(str(file.absolute()))
-        # TODO check path suffix
+        if file.suffix.lower() != ".mp4":
+            logger.debug(f"Skipping non-mp4 file: '{file.name}'.")
+            continue
+        if file in ignore_list:
+            logger.debug(f"Skipping file in ignore list: '{file.name}'.")
+            continue
+
         clips.append(Clip.from_path(file))
 
     sorted_clips = [clip for clip in sorted(clips, key=lambda x: x.creation_time_unix)]
