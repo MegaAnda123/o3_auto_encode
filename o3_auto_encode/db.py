@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+import utils
 import yaml
 
 from o3_auto_encode import logger
@@ -48,6 +49,32 @@ class FileDataBase:
                 json.dump([bundle.__dict__() for bundle in self.bundles], self.path.open("w"), indent=4)
             case _:
                 raise ValueError(f"Unsupported file type `{self.path.suffix}`.")
+
+    def validate(self) -> bool:
+        """Validate generated videos match description in database."""
+        result = True
+
+        for bundle in self.bundles:
+            expected_frames = 0
+            if bundle.status != BundleStatus.DONE:
+                continue
+            for clip in bundle.clips:
+                # TODO(#): Frames property?
+                expected_frames += clip.frames
+
+            file_path = bundle.config["output"] + "/" + bundle.name
+            if not Path(file_path).exists():
+                logger.warning(f"File `{file_path}` does not exist.")
+
+            actual_frames = utils.get_video_frames_fast(file_path)
+
+            if expected_frames != actual_frames:
+                logger.error(
+                    f"Validation failed for bundle `{bundle.name}`: expected {expected_frames} frames, got {actual_frames}."
+                )
+                result = False
+
+        return result
 
     def _init_from_file(self):
         """Initialize database from yaml/json file."""
