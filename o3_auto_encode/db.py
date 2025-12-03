@@ -65,6 +65,7 @@ class FileDataBase:
             file_path = bundle.config["output"] + "/" + bundle.name
             if not Path(file_path).exists():
                 logger.warning(f"File `{file_path}` does not exist.")
+                continue
 
             actual_frames = utils.get_video_frames_fast(file_path)
 
