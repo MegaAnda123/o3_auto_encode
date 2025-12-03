@@ -5,6 +5,7 @@ from pathlib import Path
 
 import utils
 import yaml
+from tqdm import tqdm
 
 from o3_auto_encode import logger
 from o3_auto_encode.enums import BundleStatus
@@ -54,7 +55,7 @@ class FileDataBase:
         """Validate generated videos match description in database."""
         result = True
 
-        for bundle in self.bundles:
+        for bundle in tqdm(self.bundles, desc=f"Validating videos..."):
             expected_frames = 0
             if bundle.status != BundleStatus.DONE:
                 continue
