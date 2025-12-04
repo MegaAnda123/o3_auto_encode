@@ -30,7 +30,7 @@ def get_ffprobe_path() -> str:
 
 
 def get_video_frames(video_path: Path | str) -> int:
-    """Get frame count from video.
+    """Get frame count from video file header.
 
     Args:
         video_path: Video path.
@@ -49,9 +49,8 @@ def get_video_frames(video_path: Path | str) -> int:
             "error",
             "-select_streams",
             "v:0",
-            "-count_packets",
             "-show_entries",
-            "stream=nb_read_packets",
+            "stream=nb_frames",
             "-of",
             "csv=p=0",
             str(path),
@@ -59,7 +58,6 @@ def get_video_frames(video_path: Path | str) -> int:
         stdout=subprocess.PIPE,
         text=True,
     )
-
     return int(process.stdout.strip())
 
 
