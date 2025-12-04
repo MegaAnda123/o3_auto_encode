@@ -68,7 +68,7 @@ class FileDataBase:
                 logger.warning(f"File `{file_path}` does not exist.")
                 continue
 
-            actual_frames = utils.get_video_frames_fast(file_path)
+            actual_frames = utils.get_video_frames(file_path)
 
             if expected_frames != actual_frames:
                 logger.error(

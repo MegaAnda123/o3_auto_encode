@@ -30,40 +30,6 @@ def get_ffprobe_path() -> str:
 
 
 def get_video_frames(video_path: Path | str) -> int:
-    """Get frame count from video.
-
-    Args:
-        video_path: Video path.
-
-    Returns:
-        Frame count.
-
-    """
-    path = Path(video_path)
-    ffprobe = get_ffprobe_path()
-
-    process = subprocess.run(
-        [
-            ffprobe,
-            "-v",
-            "error",
-            "-select_streams",
-            "v:0",
-            "-count_packets",
-            "-show_entries",
-            "stream=nb_read_packets",
-            "-of",
-            "csv=p=0",
-            str(path),
-        ],
-        stdout=subprocess.PIPE,
-        text=True,
-    )
-
-    return int(process.stdout.strip())
-
-
-def get_video_frames_fast(video_path: Path | str) -> int:
     """Get frame count from video file header.
 
     Args:
