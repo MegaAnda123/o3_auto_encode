@@ -62,11 +62,12 @@ class FFMPEGSettings:
         self.preset = self.preset if data.get("preset") is None else EncodePreset(data["preset"])
         self.concatenation = self.concatenation if data.get("concatenation") is None else data["concatenation"]
 
-    def generate_args(self, output_file_name: str) -> list[str]:
+    def generate_args(self, output_file_name: str, creation_time: str) -> list[str]:
         """Generate FFMPEG command line args for running current configuration stored in FFMPEGSettings object.
 
         Args:
             output_file_name: Output file name.
+            creation_time:
 
         Returns:
             List of command line args for running current configuration stored in FFMPEGSettings object.
@@ -76,11 +77,11 @@ class FFMPEGSettings:
             raise NotImplementedError
 
         if self.codec in [Codec.H264_NVENC, Codec.H265_NVENC, Codec.AV1_NVENC]:
-            return self._generate_gpu_args(output_file_name)
+            return self._generate_gpu_args(output_file_name, creation_time)
         else:
-            return self._generate_cpu_args(output_file_name)
+            return self._generate_cpu_args(output_file_name, creation_time)
 
-    def _generate_cpu_args(self, output_file_name: str) -> list[str]:
+    def _generate_cpu_args(self, output_file_name: str, creation_time: str) -> list[str]:
         return [
             utils.get_ffmpeg_path(),
             "-safe",
@@ -89,6 +90,8 @@ class FFMPEGSettings:
             "concat",
             "-i",
             str(self.input.absolute()),
+            "-metadata",
+            f"creation_time={creation_time}",
             "-c:v",
             str(self.codec),
             "-crf",
@@ -99,7 +102,7 @@ class FFMPEGSettings:
             "-y",
         ]
 
-    def _generate_gpu_args(self, output_file_name: str) -> list[str]:
+    def _generate_gpu_args(self, output_file_name: str, creation_time: str) -> list[str]:
         # Map EncodePreset to NVENC numeric presets (p1..p7). Default to p7 for slower presets.
         preset_map = {
             EncodePreset.ULTRAFAST: "p1",
@@ -123,6 +126,8 @@ class FFMPEGSettings:
             "concat",
             "-i",
             str(self.input.absolute()),
+            "-metadata",
+            f"creation_time={creation_time}",
             "-c:v",
             str(self.codec),
             "-preset",
@@ -144,6 +149,6 @@ class FFMPEGSettings:
         result = {}
         for k, v in self.__dict__.items():
             result[k] = str(v)
-        full_command = " ".join(self.generate_args(str(self.output)))
+        full_command = " ".join(self.generate_args(str(self.output), "creation_time"))
         result["command"] = full_command
         return result
