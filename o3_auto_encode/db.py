@@ -3,11 +3,10 @@
 import json
 from pathlib import Path
 
-import utils
 import yaml
 from tqdm import tqdm
 
-from o3_auto_encode import logger
+from o3_auto_encode import logger, utils
 from o3_auto_encode.enums import BundleStatus
 from o3_auto_encode.file_manager import Bundle, Clip
 
