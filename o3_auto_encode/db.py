@@ -6,7 +6,8 @@ from pathlib import Path
 import yaml
 
 from o3_auto_encode import logger
-from o3_auto_encode.file_manager import Bundle
+from o3_auto_encode.enums import BundleStatus
+from o3_auto_encode.file_manager import Bundle, Clip
 
 
 class FileDataBase:
@@ -23,8 +24,17 @@ class FileDataBase:
     path: Path
     bundles: list[Bundle]
 
+    @property
+    def all_done_clips(self) -> list[Clip]:
+        """Get all clips in done bundles."""
+        clips = []
+        for bundle in self.bundles:
+            if bundle.status == BundleStatus.DONE:
+                clips.extend(bundle.clips)
+        return clips
+
     def __init__(self, path: Path | str, bundles: list[Bundle] = None) -> None:
-        self.bundles = bundles if bundles is not None else []
+        self.bundles = bundles or []
         self.path = Path(path)
         self._init_from_file()
 
