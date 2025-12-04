@@ -38,6 +38,10 @@ def run(launch_args: LaunchArguments) -> None:
         bundle.config["list"] = ", ".join([str(c.path) for c in bundle.clips])
         bundle.status = BundleStatus.DONE
         db.write()
+
+    logger.info("Validating encoded files...")
+    db.validate()
+
     return None
 
 
