@@ -1,5 +1,5 @@
-codec: "libx265"
-preset: "slower"
-crf: 30
-input: "/in"
-output: "/out"
+codec : "av1_nvenc"
+preset : "placebo"
+crf : "40"
+input : "./temp/"
+output : "./out/"

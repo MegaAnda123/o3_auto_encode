@@ -25,7 +25,7 @@ def pars_args() -> LaunchArguments:
         "-j",
         "--json",
         type=str,
-        default=f"/out/.meta.json",
+        default="out/.meta.json",
         help="Where to store json file containing progress and metadata.",
     )
 

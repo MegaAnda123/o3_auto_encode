@@ -40,6 +40,8 @@ class FileDataBase:
         self._init_from_file()
 
     def write(self):
+        # Ensure relative targets like ./out/.meta.json can be created.
+        self.path.parent.mkdir(parents=True, exist_ok=True)
         match self.path.suffix:
             case ".yaml":
                 yaml.dump([bundle.__dict__() for bundle in self.bundles], self.path.open("w"))

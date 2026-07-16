@@ -62,3 +62,13 @@ def test_init_with_existing_data(helpers, tmp_path, db_path: Path, expected_path
     db.write()
 
     helpers.test_db_files(tmp_db_path, expected_path)
+
+
+def test_db_write_creates_parent_directories(tmp_path):
+    db_path = tmp_path / "out" / ".meta.json"
+
+    db = FileDataBase(db_path)
+    db.write()
+
+    assert db_path.is_file()
+
