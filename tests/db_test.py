@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from o3_auto_encode.db import FileDataBase
+from o3_auto_encode.enums import BundleStatus
 from o3_auto_encode.file_manager import generate_bundles
 
 TEST_ROOT = Path(__file__).parent
@@ -71,4 +72,25 @@ def test_db_write_creates_parent_directories(tmp_path):
     db.write()
 
     assert db_path.is_file()
+
+
+def test_validate_marks_bundle_verified_and_writes(tmp_path, mocker):
+    bundles = generate_bundles(TEST_ROOT / "test_files/144p/")
+    db_path = tmp_path / "test.json"
+    db = FileDataBase(db_path, bundles)
+
+    bundle = db.bundles[0]
+    bundle.status = BundleStatus.DONE
+    bundle.config = {"output": str(tmp_path)}
+
+    expected_frames = sum(clip.frames for clip in bundle.clips)
+    (tmp_path / bundle.name).touch()
+    mocker.patch("o3_auto_encode.utils.get_video_frames_fast", return_value=expected_frames)
+
+    assert db.validate() is True
+    assert bundle.status == BundleStatus.VERIFIED
+
+    persisted_db = FileDataBase(db_path)
+    assert persisted_db.bundles[0].status == BundleStatus.VERIFIED
+
 

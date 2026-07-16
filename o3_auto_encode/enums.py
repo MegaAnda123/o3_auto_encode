@@ -34,6 +34,7 @@ class BundleStatus(Enum):
     PROCESSING = "processing"
     INTERRUPTED = "interrupted"
     DONE = "done"
+    VERIFIED = "verified"
 
     def __str__(self) -> str:
         return self.value

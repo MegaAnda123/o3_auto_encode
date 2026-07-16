@@ -20,7 +20,7 @@ def run(launch_args: LaunchArguments) -> None:
     db = FileDataBase(launch_args.json_path, generate_bundles(ffmpeg_settings.input, ignore_list=completed_clips))
 
     for bundle in db.bundles:
-        if bundle.status == BundleStatus.DONE:
+        if bundle.status in [BundleStatus.DONE, BundleStatus.VERIFIED]:
             logger.info(f"Skipping already processed clips: {bundle.name}")
             continue
         if bundle.status == BundleStatus.INTERRUPTED:
