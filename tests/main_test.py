@@ -76,3 +76,41 @@ def test_resume_interrupted(helpers, tmp_path):
     result_path = tmp_path / "test.json"
     expected_path = TEST_ROOT / "test_files/expected/main_expected.json"
     helpers.test_db_files(result_path, expected_path)
+
+
+def test_reencode_non_verified_only(helpers, tmp_path, mocker):
+    args = LaunchArguments(str(helpers.get_test_config(tmp_path)), str(tmp_path / "test.json"))
+
+    bundles = main.generate_bundles(TEST_ROOT / "test_files/144p")
+    bundles[0].status = BundleStatus.DONE
+    bundles[1].status = BundleStatus.VERIFIED
+    db = FileDataBase(tmp_path / "test.json", bundles)
+    db.write()
+
+    encode_bundle_mock = mocker.patch("o3_auto_encode.main.encode_bundle")
+    mocker.patch("o3_auto_encode.main.FileDataBase.validate", return_value=True)
+
+    main.run(args)
+
+    assert encode_bundle_mock.call_count == 1
+    assert encode_bundle_mock.call_args[0][0].name == bundles[0].name
+
+
+def test_processing_bundle_cleanup_before_retry(helpers, tmp_path, mocker):
+    args = LaunchArguments(str(helpers.get_test_config(tmp_path)), str(tmp_path / "test.json"))
+
+    bundles = main.generate_bundles(TEST_ROOT / "test_files/144p")
+    bundles[0].status = BundleStatus.PROCESSING
+    bundles[1].status = BundleStatus.VERIFIED
+    db = FileDataBase(tmp_path / "test.json", bundles)
+    db.write()
+
+    cleanup_mock = mocker.patch("o3_auto_encode.main.clean_up_interrupted_video")
+    mocker.patch("o3_auto_encode.main.encode_bundle")
+    mocker.patch("o3_auto_encode.main.FileDataBase.validate", return_value=True)
+
+    main.run(args)
+
+    cleanup_mock.assert_called_once()
+    assert cleanup_mock.call_args[0][0].name == bundles[0].name
+

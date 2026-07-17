@@ -26,11 +26,11 @@ class FileDataBase:
     bundles: list[Bundle]
 
     @property
-    def all_done_clips(self) -> list[Clip]:
-        """Get all clips in done bundles."""
+    def all_verified_clips(self) -> list[Clip]:
+        """Get all clips in verified bundles."""
         clips = []
         for bundle in self.bundles:
-            if bundle.status in [BundleStatus.DONE, BundleStatus.VERIFIED]:
+            if bundle.status == BundleStatus.VERIFIED:
                 clips.extend(bundle.clips)
         return clips
 

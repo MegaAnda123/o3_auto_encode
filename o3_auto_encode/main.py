@@ -16,14 +16,14 @@ def run(launch_args: LaunchArguments) -> None:
     logger.debug(str(Path.cwd()))
 
     ffmpeg_settings = FFMPEGSettings(launch_args.config_path)
-    completed_clips = [clip.path for clip in FileDataBase(launch_args.json_path).all_done_clips]
+    completed_clips = [clip.path for clip in FileDataBase(launch_args.json_path).all_verified_clips]
     db = FileDataBase(launch_args.json_path, generate_bundles(ffmpeg_settings.input, ignore_list=completed_clips))
 
     for bundle in db.bundles:
-        if bundle.status in [BundleStatus.DONE, BundleStatus.VERIFIED]:
+        if bundle.status == BundleStatus.VERIFIED:
             logger.info(f"Skipping already processed clips: {bundle.name}")
             continue
-        if bundle.status == BundleStatus.INTERRUPTED:
+        if bundle.status in [BundleStatus.INTERRUPTED, BundleStatus.PROCESSING]:
             clean_up_interrupted_video(bundle, ffmpeg_settings.output)
         bundle.status = BundleStatus.PROCESSING
         try:
