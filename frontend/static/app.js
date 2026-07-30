@@ -234,6 +234,100 @@ const encodedVideo = document.getElementById("video-encoded");
 const syncToggle = document.getElementById("compare-sync");
 const compareNote = document.getElementById("compare-note");
 
+// Difference below this counts as "already in sync"; also used to detect mirrored (echo) events.
+const SYNC_TOLERANCE_S = 0.15;
+// Playback drift above this is corrected while both are playing.
+const DRIFT_TOLERANCE_S = 0.35;
+
+function syncEnabled() {
+    return syncToggle.checked && originalVideo.src && encodedVideo.src;
+}
+
+/** `play()` rejects when interrupted by a seek/pause, which is harmless here. */
+function safePlay(video) {
+    const promise = video.play();
+    if (promise && typeof promise.catch === "function") promise.catch(() => {});
+}
+
+/* Mirrored changes are tagged with the value we wrote, so the events they trigger on the
+   other player can be recognised as echoes and ignored. No timers, so user input is never
+   swallowed (which previously broke scrubbing). */
+
+function setTime(target, time) {
+    target._expectedTime = time;
+    if (Math.abs(target.currentTime - time) > SYNC_TOLERANCE_S) target.currentTime = time;
+}
+
+function isEchoSeek(video) {
+    return video._expectedTime !== undefined && Math.abs(video.currentTime - video._expectedTime) <= SYNC_TOLERANCE_S;
+}
+
+function setPlayback(target, shouldPlay) {
+    target._expectedPaused = !shouldPlay;
+    if (shouldPlay) {
+        safePlay(target);
+    } else {
+        target.pause();
+    }
+}
+
+function isEchoPlayback(video) {
+    if (video._expectedPaused === undefined) return false;
+    const echo = video._expectedPaused === video.paused;
+    video._expectedPaused = undefined;
+    return echo;
+}
+
+function linkVideos(source, target, isMaster) {
+    source.addEventListener("play", () => {
+        if (!syncEnabled() || isEchoPlayback(source)) return;
+        setPlayback(target, true);
+    });
+
+    source.addEventListener("pause", () => {
+        if (!syncEnabled() || isEchoPlayback(source)) return;
+        // A seek stalls playback; the resume is handled in `seeked`.
+        if (source.seeking) return;
+        setPlayback(target, false);
+    });
+
+    source.addEventListener("ratechange", () => {
+        if (syncEnabled()) target.playbackRate = source.playbackRate;
+    });
+
+    source.addEventListener("seeking", () => {
+        if (!syncEnabled() || isEchoSeek(source)) return;
+        // Hold the partner still while this one seeks, otherwise it runs ahead and desyncs.
+        if (!target.paused) {
+            target._resumeAfterSeek = true;
+            setPlayback(target, false);
+        }
+        setTime(target, source.currentTime);
+    });
+
+    source.addEventListener("seeked", () => {
+        if (!syncEnabled() || isEchoSeek(source)) return;
+        setTime(target, source.currentTime);
+        if (target._resumeAfterSeek) {
+            target._resumeAfterSeek = false;
+            if (!source.paused) setPlayback(target, true);
+        }
+    });
+
+    if (!isMaster) return;
+    // Only one direction corrects drift, otherwise the two would fight each other.
+    source.addEventListener("timeupdate", () => {
+        if (!syncEnabled() || source.paused || target.paused) return;
+        if (source.seeking || target.seeking) return;
+        if (Math.abs(target.currentTime - source.currentTime) > DRIFT_TOLERANCE_S) {
+            setTime(target, source.currentTime);
+        }
+    });
+}
+
+linkVideos(originalVideo, encodedVideo, true);
+linkVideos(encodedVideo, originalVideo, false);
+
 function openCompare(bundleName) {
     const bundle = bundlesByName.get(bundleName);
     if (!bundle || !bundle.encoded) return;
@@ -251,33 +345,19 @@ function closeCompare() {
     encodedVideo.pause();
     originalVideo.removeAttribute("src");
     encodedVideo.removeAttribute("src");
-    dialog.close();
+    for (const video of [originalVideo, encodedVideo]) {
+        video._expectedTime = undefined;
+        video._expectedPaused = undefined;
+        video._resumeAfterSeek = false;
+    }
+    if (dialog.open) dialog.close();
 }
-
-function mirror(source, target, action) {
-    if (!syncToggle.checked) return;
-    action(target, source);
-}
-
-originalVideo.addEventListener("play", () => mirror(originalVideo, encodedVideo, (t) => t.play()));
-originalVideo.addEventListener("pause", () => mirror(originalVideo, encodedVideo, (t) => t.pause()));
-originalVideo.addEventListener("seeked", () =>
-    mirror(originalVideo, encodedVideo, (t, s) => (t.currentTime = s.currentTime))
-);
-encodedVideo.addEventListener("play", () => mirror(encodedVideo, originalVideo, (t) => t.play()));
-encodedVideo.addEventListener("pause", () => mirror(encodedVideo, originalVideo, (t) => t.pause()));
-encodedVideo.addEventListener("seeked", () =>
-    mirror(encodedVideo, originalVideo, (t, s) => (t.currentTime = s.currentTime))
-);
 
 document.getElementById("compare-play").addEventListener("click", () => {
-    if (originalVideo.paused) {
-        originalVideo.play();
-        encodedVideo.play();
-    } else {
-        originalVideo.pause();
-        encodedVideo.pause();
-    }
+    // Drive both directly; the resulting events are recognised as echoes.
+    const shouldPlay = originalVideo.paused;
+    setPlayback(originalVideo, shouldPlay);
+    setPlayback(encodedVideo, shouldPlay);
 });
 document.getElementById("compare-close").addEventListener("click", closeCompare);
 dialog.addEventListener("close", closeCompare);
