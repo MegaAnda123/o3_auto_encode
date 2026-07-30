@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>o3 auto encode</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <header>
+        <h1>o3 auto encode</h1>
+        <div id="status-line" class="muted">Loading…</div>
+    </header>
+
+    <main id="bundles" class="bundles"></main>
+
+    <dialog id="compare">
+        <div class="compare-head">
+            <h2 id="compare-title"></h2>
+            <button id="compare-close" type="button">Close</button>
+        </div>
+        <div class="compare-grid">
+            <figure>
+                <figcaption>Original (first clip)</figcaption>
+                <video id="video-original" controls preload="metadata"></video>
+            </figure>
+            <figure>
+                <figcaption>Re-encoded</figcaption>
+                <video id="video-encoded" controls preload="metadata"></video>
+            </figure>
+        </div>
+        <div class="compare-controls">
+            <button id="compare-play" type="button">Play / pause both</button>
+            <label><input id="compare-sync" type="checkbox" checked> Sync playback</label>
+            <span id="compare-note" class="muted"></span>
+        </div>
+    </dialog>
+
+    <script src="/app.js"></script>
+</body>
+
+</html>
+

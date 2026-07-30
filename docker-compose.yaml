@@ -4,3 +4,15 @@ services:
     build:
       context: ./
       dockerfile: ./Dockerfile
+
+  web:
+    image: ghcr.io/megaanda123/o3_auto_encode/o3_auto_encode:${IMAGE_TAG:-latest}
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    command: ["uvicorn", "frontend.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      O3_DB_PATH: /out/db.json
+      O3_CONFIG_PATH: config.yaml
+    ports:
+      - "8000:8000"

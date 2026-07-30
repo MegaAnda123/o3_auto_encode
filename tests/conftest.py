@@ -38,7 +38,36 @@ class Helpers:
             result = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", result)
             expected = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", expected)
 
+        result = Helpers.strip_machine_stats(result, Path(expected_path).suffix)
+        expected = Helpers.strip_machine_stats(expected, Path(expected_path).suffix)
+
         assert result == expected
+
+    @staticmethod
+    def strip_machine_stats(content: str, suffix: str) -> str:
+        """Remove probe based stats (size/resolution/bitrate/fps/codec/encoded) from a serialized database.
+
+        These depend on the local ffprobe build and are asserted separately, so they are excluded
+        from the golden file comparison.
+
+        Args:
+            content: Serialized database content.
+            suffix: File suffix of the database file (`.json`, `.yaml` or `.yml`).
+
+        Returns:
+            Content without the probe based stat entries.
+
+        """
+        if suffix == ".json":
+            # Drop the trailing clip stat block including the preceding comma.
+            content = re.sub(r",\n\s*\"size\"\:[\w\W]*?\"codec\"\:\s[^\n]*", "", content)
+            content = re.sub(r"^[ \t]*\"encoded\"\:[^\n]*\n", "", content, flags=re.MULTILINE)
+        else:
+            content = re.sub(
+                r"^[ \t]*(size|resolution|bitrate|fps|codec|encoded)\:[^\n]*\n", "", content, flags=re.MULTILINE
+            )
+        return content
+
 
     @staticmethod
     def get_test_config(tmp_path: Path) -> Path:

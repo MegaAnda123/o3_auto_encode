@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from o3_auto_encode import file_manager
@@ -51,4 +52,42 @@ def test_json_serialization() -> None:
         "frames": 11672,
     }
 
-    assert result == expected
+    for key, value in expected.items():
+        assert result[key] == value
+
+
+def test_clip_probe_stats() -> None:
+    clip_path = TEST_ROOT / "test_files/144p/DJI_0237.MP4"
+
+    clip = file_manager.Clip.from_path(clip_path)
+
+    assert clip.size == clip_path.stat().st_size
+    assert re.fullmatch(r"\d+x\d+", clip.resolution)
+    assert clip.bitrate > 0
+    assert clip.fps > 0
+    assert clip.codec
+
+
+def test_bundle_totals() -> None:
+    path = TEST_ROOT / "test_files/144p"
+    clips = [
+        file_manager.Clip.from_path(path / "DJI_0237.MP4"),
+        file_manager.Clip.from_path(path / "DJI_0238.MP4"),
+    ]
+
+    bundle = file_manager.Bundle(clips)
+
+    assert bundle.total_frames == sum(clip.frames for clip in clips)
+    assert bundle.total_size == sum(clip.size for clip in clips)
+    assert bundle.encoded is None
+    assert bundle.is_encoded is False
+    assert bundle.output_path("/tmp/out") == Path("/tmp/out") / bundle.name
+
+
+def test_bundle_output_path_prefers_config() -> None:
+    path = TEST_ROOT / "test_files/144p"
+    bundle = file_manager.Bundle([file_manager.Clip.from_path(path / "DJI_0237.MP4")])
+    bundle.config = {"output": "/configured"}
+
+    assert bundle.output_path("/fallback") == Path("/configured") / bundle.name
+

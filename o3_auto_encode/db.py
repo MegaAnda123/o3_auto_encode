@@ -58,12 +58,9 @@ class FileDataBase:
         status_updated = False
 
         for bundle in tqdm(self.bundles, desc=f"Validating videos..."):
-            expected_frames = 0
             if bundle.status not in [BundleStatus.DONE, BundleStatus.VERIFIED]:
                 continue
-            for clip in bundle.clips:
-                # TODO(#): Frames property?
-                expected_frames += clip.frames
+            expected_frames = bundle.total_frames
 
             file_path = bundle.config["output"] + "/" + bundle.name
             if not Path(file_path).exists():
@@ -77,9 +74,15 @@ class FileDataBase:
                     f"Validation failed for bundle `{bundle.name}`: expected {expected_frames} frames, got {actual_frames}."
                 )
                 result = False
-            elif bundle.status != BundleStatus.VERIFIED:
-                bundle.status = BundleStatus.VERIFIED
-                status_updated = True
+            else:
+                # Only record output stats once the encode is known to be complete.
+                encoded = utils.probe_video(file_path)
+                if encoded != bundle.encoded:
+                    bundle.encoded = encoded
+                    status_updated = True
+                if bundle.status != BundleStatus.VERIFIED:
+                    bundle.status = BundleStatus.VERIFIED
+                    status_updated = True
 
         if status_updated:
             self.write()

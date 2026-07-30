@@ -25,6 +25,11 @@ class Clip:
         duration_s: Clip duration as float in seconds.
         delta: Time difference between two clips. Used and added by `generate_bundles` function.
         frames: Number of frames in clip.
+        size: File size in bytes.
+        resolution: Video resolution as string, format `WIDTHxHEIGHT`.
+        bitrate: Video bitrate in bits per second.
+        fps: Average frame rate.
+        codec: Video codec name.
 
     """
 
@@ -36,13 +41,35 @@ class Clip:
     duration_s: float
     delta: float | None
     frames: int
+    size: int | None
+    resolution: str | None
+    bitrate: int | None
+    fps: float | None
+    codec: str | None
 
-    def __init__(self, path: Path | str, creation_time: str, duration: str, frames: int, delta: int | None = None):
+    def __init__(
+        self,
+        path: Path | str,
+        creation_time: str,
+        duration: str,
+        frames: int,
+        delta: int | None = None,
+        size: int | None = None,
+        resolution: str | None = None,
+        bitrate: int | None = None,
+        fps: float | None = None,
+        codec: str | None = None,
+    ):
         self.path = Path(path)
         self.creation_time = creation_time
         self.duration = duration
         self.frames = frames
         self.delta = delta
+        self.size = size
+        self.resolution = resolution
+        self.bitrate = bitrate
+        self.fps = fps
+        self.codec = codec
 
     @classmethod
     def from_path(cls, path: Path | str):
@@ -52,8 +79,18 @@ class Clip:
         ffprobe_string = process.stderr.decode("utf8")
         creation_time = re.search(r"\s*creation_time\s*:\s([\w\-:.]*)", ffprobe_string).group(1)
         duration = re.search(r"\s*Duration\s*:\s([\w\-:.]*)", ffprobe_string).group(1)
-        frames = utils.get_video_frames(path)
-        return cls(path, creation_time, duration, frames)
+        stats = utils.probe_video(path)
+        return cls(
+            path,
+            creation_time,
+            duration,
+            stats["frames"],
+            size=stats["size"],
+            resolution=stats["resolution"],
+            bitrate=stats["bitrate"],
+            fps=stats["fps"],
+            codec=stats["codec"],
+        )
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]):
@@ -62,7 +99,18 @@ class Clip:
         duration = data.get("duration")
         frames = data.get("frames")
         delta = data.get("delta")
-        return cls(path, creation_time, duration, frames, delta)
+        return cls(
+            path,
+            creation_time,
+            duration,
+            frames,
+            delta,
+            size=data.get("size"),
+            resolution=data.get("resolution"),
+            bitrate=data.get("bitrate"),
+            fps=data.get("fps"),
+            codec=data.get("codec"),
+        )
 
     @property
     def name(self) -> str:
@@ -87,6 +135,11 @@ class Clip:
             "duration_s": self.duration_s,
             "delta": self.delta if hasattr(self, "delta") else None,
             "frames": self.frames,
+            "size": self.size,
+            "resolution": self.resolution,
+            "bitrate": self.bitrate,
+            "fps": self.fps,
+            "codec": self.codec,
         }
 
 
@@ -103,6 +156,9 @@ class Bundle:
         creation_time: Creation time (creation time from first clip).
         status: Bundle status e.g. found, interrupted, processing, done.
         config: Encoding configuration summary used when processing (set once encoding finishes).
+        encoded: Stats of the encoded output file (set once encoding is verified/done).
+        total_frames: Sum of frames across all clips.
+        total_size: Sum of file sizes across all clips in bytes.
 
     """
 
@@ -111,6 +167,7 @@ class Bundle:
     creation_time: str
     status: BundleStatus
     config: dict[str, str] | None
+    encoded: dict[str, Any] | None
 
     def __init__(self, clips: list[Clip]):
         # Sort clips by creation time (likely unnecessary, all usages provide pre-sorted clips).
@@ -119,6 +176,7 @@ class Bundle:
         self.name = f"{self.clips[0].path.stem}_{self.creation_time.split('T')[0]}.mp4"
         self.status = BundleStatus.FOUND
         self.config = None
+        self.encoded = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]):
@@ -126,12 +184,42 @@ class Bundle:
         bundle.status = bundle.status if data.get("status") is None else data.get("status")
         bundle.status = BundleStatus(bundle.status)
         bundle.config = data.get("config")
+        bundle.encoded = data.get("encoded")
 
         return bundle
 
     @property
     def creation_time(self) -> str:
         return self.clips[0].creation_time
+
+    @property
+    def total_frames(self) -> int:
+        return sum(clip.frames or 0 for clip in self.clips)
+
+    @property
+    def total_size(self) -> int | None:
+        sizes = [clip.size for clip in self.clips if clip.size is not None]
+        return sum(sizes) if len(sizes) == len(self.clips) else None
+
+    @property
+    def is_encoded(self) -> bool:
+        """Whether encoding finished, i.e. output stats are meaningful."""
+        return self.status in [BundleStatus.DONE, BundleStatus.VERIFIED]
+
+    def output_path(self, fallback_output: Path | str | None = None) -> Path | None:
+        """Resolve path of the encoded output file.
+
+        Args:
+            fallback_output: Output folder used when the bundle has no stored config.
+
+        Returns:
+            Path to the encoded file, or None if the output folder is unknown.
+
+        """
+        output_dir = (self.config or {}).get("output") or fallback_output
+        if output_dir is None:
+            return None
+        return Path(output_dir) / self.name
 
     # TODO use __iter__ instead
     def __dict__(self):
@@ -140,6 +228,7 @@ class Bundle:
             "status": str(self.status),
             "creation_time": self.creation_time,
             "config": self.config,
+            "encoded": self.encoded,
             "clips": [clip.__dict__() for clip in self.clips],
         }
 

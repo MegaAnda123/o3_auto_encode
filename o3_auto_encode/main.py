@@ -2,7 +2,7 @@ import signal
 from pathlib import Path
 from types import FrameType
 
-from o3_auto_encode import logger
+from o3_auto_encode import logger, progress
 from o3_auto_encode.args_parser import LaunchArguments, pars_args
 from o3_auto_encode.db import FileDataBase
 from o3_auto_encode.encoder import encode_bundle
@@ -16,6 +16,8 @@ def run(launch_args: LaunchArguments) -> None:
     logger.debug(str(Path.cwd()))
 
     ffmpeg_settings = FFMPEGSettings(launch_args.config_path)
+    progress_path = progress.progress_path_for(launch_args.json_path)
+    progress.clear_progress(progress_path)
     completed_clips = [clip.path for clip in FileDataBase(launch_args.json_path).all_verified_clips]
     db = FileDataBase(launch_args.json_path, generate_bundles(ffmpeg_settings.input, ignore_list=completed_clips))
 
@@ -26,11 +28,13 @@ def run(launch_args: LaunchArguments) -> None:
         if bundle.status in [BundleStatus.INTERRUPTED, BundleStatus.PROCESSING]:
             clean_up_interrupted_video(bundle, ffmpeg_settings.output)
         bundle.status = BundleStatus.PROCESSING
+        db.write()
         try:
-            encode_bundle(bundle, ffmpeg_settings)
+            encode_bundle(bundle, ffmpeg_settings, progress_path)
         except (KeyboardInterrupt, NotADirectoryError):
             bundle.status = BundleStatus.INTERRUPTED
             db.write()
+            progress.clear_progress(progress_path)
             logger.info("Encoding interrupted.")
             return None
 
@@ -38,6 +42,8 @@ def run(launch_args: LaunchArguments) -> None:
         bundle.config["list"] = ", ".join([str(c.path) for c in bundle.clips])
         bundle.status = BundleStatus.DONE
         db.write()
+
+    progress.clear_progress(progress_path)
 
     logger.info("Validating encoded files...")
     db.validate()

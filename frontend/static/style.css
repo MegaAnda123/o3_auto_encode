@@ -1,0 +1,252 @@
+:root {
+    color-scheme: dark;
+    --bg: #14161a;
+    --card: #1d2027;
+    --line: #2c313a;
+    --text: #e6e8ec;
+    --muted: #8b93a1;
+    --accent: #4da3ff;
+    --good: #46c07a;
+    --warn: #e0a33e;
+    --bad: #e06c6c;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 1.5rem;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 system-ui, "Segoe UI", sans-serif;
+}
+
+header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+h1 {
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+.muted {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.bundles {
+    display: grid;
+    gap: 1rem;
+}
+
+.bundle {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.bundle-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.bundle-head h2 {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.badge {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+}
+
+.badge.verified,
+.badge.done {
+    color: var(--good);
+    border-color: var(--good);
+}
+
+.badge.processing {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.badge.interrupted {
+    color: var(--bad);
+    border-color: var(--bad);
+}
+
+.badge.found {
+    color: var(--warn);
+    border-color: var(--warn);
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem 1rem;
+    margin: 0.85rem 0 0;
+}
+
+.stat span {
+    display: block;
+}
+
+.stat .label {
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.stat .value {
+    font-variant-numeric: tabular-nums;
+}
+
+.savings {
+    color: var(--good);
+    font-weight: 600;
+}
+
+.pending {
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 0.85rem;
+}
+
+.progress {
+    margin-top: 0.85rem;
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-bar>div {
+    height: 100%;
+    background: var(--accent);
+    width: 0;
+    transition: width 0.3s linear;
+}
+
+.progress-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.35rem;
+}
+
+details {
+    margin-top: 0.85rem;
+}
+
+summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+
+th,
+td {
+    text-align: left;
+    padding: 0.3rem 0.5rem;
+    border-bottom: 1px solid var(--line);
+}
+
+th {
+    color: var(--muted);
+    font-weight: 500;
+}
+
+code {
+    display: block;
+    white-space: pre-wrap;
+    word-break: break-all;
+    background: #12141a;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+}
+
+button {
+    background: var(--line);
+    color: var(--text);
+    border: 0;
+    border-radius: 6px;
+    padding: 0.35rem 0.75rem;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+dialog {
+    width: min(1200px, 95vw);
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.compare-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.compare-grid figure {
+    margin: 0;
+}
+
+.compare-grid video {
+    width: 100%;
+    background: #000;
+    border-radius: 6px;
+}
+
+.compare-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+

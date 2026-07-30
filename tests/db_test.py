@@ -94,3 +94,35 @@ def test_validate_marks_bundle_verified_and_writes(tmp_path, mocker):
     assert persisted_db.bundles[0].status == BundleStatus.VERIFIED
 
 
+def test_validate_records_encoded_stats(tmp_path, mocker):
+    bundles = generate_bundles(TEST_ROOT / "test_files/144p/")
+    db = FileDataBase(tmp_path / "test.json", bundles)
+
+    bundle = db.bundles[0]
+    bundle.status = BundleStatus.DONE
+    bundle.config = {"output": str(tmp_path)}
+    (tmp_path / bundle.name).touch()
+
+    mocker.patch("o3_auto_encode.utils.get_video_frames_fast", return_value=bundle.total_frames)
+    probe = {"size": 123, "resolution": "256x144", "bitrate": 456, "fps": 60.0, "codec": "hevc", "frames": 1}
+    mocker.patch("o3_auto_encode.utils.probe_video", return_value=probe)
+
+    assert db.validate() is True
+    assert bundle.encoded == probe
+
+
+def test_validate_leaves_encoded_stats_empty_when_unfinished(tmp_path, mocker):
+    bundles = generate_bundles(TEST_ROOT / "test_files/144p/")
+    db = FileDataBase(tmp_path / "test.json", bundles)
+
+    bundle = db.bundles[0]
+    bundle.status = BundleStatus.INTERRUPTED
+    probe = mocker.patch("o3_auto_encode.utils.probe_video")
+
+    db.validate()
+
+    assert bundle.encoded is None
+    probe.assert_not_called()
+
+
+
