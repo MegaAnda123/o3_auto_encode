@@ -1,6 +1,6 @@
+import json
 import os
-import re
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import pytest
 import yaml
@@ -13,61 +13,57 @@ def pytest_addoption(parser):
 
 
 class Helpers:
+    # Probe based clip stats depend on the local ffprobe build, they are asserted separately.
+    CLIP_STAT_KEYS = ("size", "resolution", "bitrate", "fps", "codec")
+
     @staticmethod
     def test_db_files(result_path: Path, expected_path: Path) -> None:
         """Test database files json or yaml.
 
-        Substitutes absolute paths in file to make testing on different machines possible.
+        Compares parsed content instead of raw text so formatting and machine specific values
+        (absolute paths, probe stats, encode config) do not cause false failures.
 
         Args:
             result_path: Path to result file.
             expected_path: Path to expected file.
 
         """
-        with open(result_path) as f:
-            result = f.read()
-        with open(expected_path) as f:
-            expected = f.read()
-
-        # Replace absolute paths in expected and result data.
-        if Path(expected_path).suffix == ".json":
-            result = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", result)
-            expected = re.sub(r"\"path\"\: \"(.*[\\/])", "path: ABS_PATH ", expected)
-            result = re.sub(r"\"config\"\:\s(\{[\w\W]*?\})", '"config": null', result)
-        else:
-            result = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", result)
-            expected = re.sub(r"path\:(.*[\\/])", "path: ABS_PATH ", expected)
-
-        result = Helpers.strip_machine_stats(result, Path(expected_path).suffix)
-        expected = Helpers.strip_machine_stats(expected, Path(expected_path).suffix)
+        result = Helpers.normalize_db(Helpers.load_db(result_path))
+        expected = Helpers.normalize_db(Helpers.load_db(expected_path))
 
         assert result == expected
 
     @staticmethod
-    def strip_machine_stats(content: str, suffix: str) -> str:
-        """Remove probe based stats (size/resolution/bitrate/fps/codec/encoded) from a serialized database.
+    def load_db(path: Path) -> list:
+        """Load a json/yaml database file."""
+        path = Path(path)
+        with open(path) as f:
+            if path.suffix == ".json":
+                return json.load(f)
+            return yaml.safe_load(f)
 
-        These depend on the local ffprobe build and are asserted separately, so they are excluded
-        from the golden file comparison.
+    @staticmethod
+    def normalize_db(bundles: list) -> list:
+        """Strip machine specific values so two databases can be compared."""
+        normalized = []
+        for bundle in bundles or []:
+            bundle = dict(bundle)
+            # Encode config and encoded output stats depend on the machine/run.
+            bundle["config"] = None
+            bundle.pop("encoded", None)
+            bundle["clips"] = [Helpers._normalize_clip(clip) for clip in bundle.get("clips", [])]
+            normalized.append(bundle)
+        return normalized
 
-        Args:
-            content: Serialized database content.
-            suffix: File suffix of the database file (`.json`, `.yaml` or `.yml`).
-
-        Returns:
-            Content without the probe based stat entries.
-
-        """
-        if suffix == ".json":
-            # Drop the trailing clip stat block including the preceding comma.
-            content = re.sub(r",\n\s*\"size\"\:[\w\W]*?\"codec\"\:\s[^\n]*", "", content)
-            content = re.sub(r"^[ \t]*\"encoded\"\:[^\n]*\n", "", content, flags=re.MULTILINE)
-        else:
-            content = re.sub(
-                r"^[ \t]*(size|resolution|bitrate|fps|codec|encoded)\:[^\n]*\n", "", content, flags=re.MULTILINE
-            )
-        return content
-
+    @staticmethod
+    def _normalize_clip(clip: dict) -> dict:
+        clip = dict(clip)
+        for key in Helpers.CLIP_STAT_KEYS:
+            clip.pop(key, None)
+        if clip.get("path"):
+            # Absolute paths differ between machines.
+            clip["path"] = PurePath(str(clip["path"]).replace("\\", "/")).name
+        return clip
 
     @staticmethod
     def get_test_config(tmp_path: Path) -> Path:

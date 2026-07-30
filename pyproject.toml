@@ -5,6 +5,10 @@ description = "Automated tool for recombining split air unit clips into one file
 authors = ["André Strømsnes Helland <andrehelland99@gmail.com>"]
 license = "LGPL-3.0-only"
 readme = "README.md"
+packages = [
+    { include = "o3_auto_encode" },
+    { include = "frontend" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -45,6 +49,11 @@ line_length = 120
 [tool.flake8]
 max_line_length="120"
 select="E9, F63, F7, F82, F4, H4"
+
+[tool.pytest.ini_options]
+# Make `o3_auto_encode` and `frontend` importable without installing the project.
+pythonpath = ["."]
+testpaths = ["tests"]
 
 [build-system]
 requires = ["poetry-core"]
